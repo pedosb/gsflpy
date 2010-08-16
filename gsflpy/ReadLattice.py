@@ -1,45 +1,162 @@
-#! /usr/bin/env python
-import sys
+from ArgumentNotFoundError import ArgumentNotFoundError
+from Lattice import Lattice
+from Node import Node
+from Link import Link
 
 class ReadLattice():
     COMMENT_CHAR = '#'
 
-    def error(self, comment):
-	print comment
-	exit(-1)
+    def __init__(self):
+	self.node_number = None
+	self.link_number = None
+	self.nodes = dict()
+	self.links = dict()
 
-    def parse_node_and_link_number(self, line):
-	line_splitted = line.split()
-
-	words = line_splitted[0].split('=')
-	if words[0] != 'N':
-	    error('expected N, but was found "' +\
-		    words[0] + '"')
-	self.node_number = words[1]
-
-        words = line_splitted[1].split('=')
-	if words[0] != 'L':
-	    error('expected L, but was found "' + \
-		    words[0] + '"')
-	self.link_number = words[1]
-
-    def parse_line(self, line):
-	arg_type = line.split()[0].split('=')[0]
-	if arg_type == 'N':
-	    self.parse_node_and_link_number(line)
+    def split_argument_unit(self, argument_unit):
+	words = argument_unit.split('=')
+	if len(words) != 2:
+	    #TODO create an exception for this
+	    print 'syntax error in line' +\
+		    self.line + '\n' +\
+		    'CREATE AN EXCEPTION FOR THIS'
+	    exit(-1)
 	else:
-	    error('not found argument "' + \
-		    arg_type + '"')
+	    return words
+
+    def parse_sizespec(self):
+	"""
+	Here we expect a line in the format
+	sizespec = "N=" intnumber "L=" intnumber
+	"""
+	line_splitted = self.line.split()
+
+	for argument_unit in line_splitted:
+	    #  words[0] is the identifier of the argument
+	    # and words[1] is the argument value.
+	    words = self.split_argument_unit(argument_unit)
+	    if words[0] == 'N':
+		self.node_number = int(words[1])
+	    elif words[0] == 'L':
+		self.link_number = int(words[1])
+	    # if we do not recognize the argument an exception is raised
+	    else:
+	        raise ArgumentNotFoundError(found = words[0])
+
+    def parse_node(self):
+	"""
+	Here we expect a line int he format
+
+	node = "I=" intnumber
+	{ "t=" floatnumber | "W=" string |
+	"s=" string | "L=" string | "v=" intnumber }
+	"""
+	line_splitted = self.line.split()
+	i=t=w=s=l=v=None
+	for argument_unit in line_splitted:
+	    words = self.split_argument_unit(argument_unit)
+
+	    if words[0] == 'I':
+		i = words[1]
+	    elif words[0] == 't':
+		t = words[1]
+	    elif words[0] == 'W':
+		w = words[1]
+	    elif words[0] == 's':
+		s = words[1]
+	    elif words[0] == 'L':
+		l = words[1]
+	    elif words[0] == 'v':
+		v = words[1]
+	    else:
+		raise ArgumentNotFoundError(found = words[0])
+	if i != None:
+	    self.nodes[i] = Node(i, t, w, s, l, v)
+	else:
+	    ArgumentNotFoundError(self.line, 'I = identifier expected')
+
+    def parse_segment(self, segment):
+        
+
+    def read_segment(self, segment):
+        
+
+    def parse_link(self):
+	"""
+	Here we expect a line in the format
+	arc = "J=" intnumber
+	"S=" intnumber
+	"E=" intnumber
+	{ "a=" floatnumber | "l=" floatnumber | "a=" floatnumber | "r=" floatnumber |
+	"W=" string | "v=" intnumber | "d=" segments }
+	"""
+	line_splitted = self.line.split()
+	j=s=e=a=l=r=w=v=d=None
+	for argument_unit in line_splitted:
+	    words = self.split_argument_unit(argument_unit)
+
+	    if words[0] == 'J':
+		j = words[1]
+	    elif words[0] == 'S':
+		if words[1] not in self.nodes:
+		    raise KeyNotFoundError(words[1], 'nodes')
+		s = self.nodes[words[1]]
+	    elif words[0] == 'E':
+		if words[1] not in self.nodes:
+		    raise KeyNotFoundError(words[1], 'nodes')
+		e = self.nodes[words[1]]
+	    elif words[0] == 'a':
+		a = words[1]
+	    elif words[0] == 'l':
+		l = words[1]
+	    elif words[0] == 'r':
+		r = words[1]
+	    elif words[0] == 'W':
+		w = words[1]
+	    elif words[0] == 'v':
+		v = words[1]
+	    elif words[0] == 'd':
+		d = self.read_segment(words[1])
+	    else:
+		raise ArgumentNotFoundError(self.line)
+	if j != None or s != None or e != None:
+	    self.links[j] = Link(j, s, e, a, l, r, w, v, d)
+	else:
+	    ArgumentNotFoundError(self.line, 'J, S and E expected ' +\
+		    'see htkbook for arcs specifications')
 
     def parse(self, lat_file):
-	for line in open(lat_file):
-	    if line.startswith(self.COMMENT_CHAR):
+        self.line_number = 0
+	for self.line in open(lat_file):
+	    self.line_number = self.line_number + 1
+	    if self.line.startswith(self.COMMENT_CHAR):
 		continue
-	    if line.split()[0].split('=')[0] == 'N':
-		self.parse_line(line)
+	    self.current_arg_name = self.line.split()[0].split('=')[0]
+
+	    if self.current_arg_name == 'N':
+		self.parse_sizespec()
+
+	    if self.current_arg_name == 'I':
+		if not self.link_number or not self.node_number:
+		    raise ArgumentNotFoundError(\
+			    self.current_arg_name,\
+			    'sizespec see htkbook')
+	        self.parse_node()
+
+	    if self.current_arg_name == 'J':
+		if len(self.nodes) != self.node_number:
+		    #TODO this must have an exception
+		    print 'Number of nodes is not the same ' +\
+			    'of the specified\n DO AN EXCEPTION ' + \
+			    'FOR THIS.'
+		    exit(-1)
+		self.parse_link()
+
+	if self.link_number != len(self.links):
+	    print 'Number of links is not the same ' +\
+		    'of the specified\n DO AN EXCEPTION ' +\
+		    'FOR THIS.'
+	    exit(-1)
+
 	print self.node_number
 	print self.link_number
-
-if __name__ == "__main__":
-    read = ReadLattice()
-    read.parse(sys.argv[1])
+	return Lattice(self.nodes, self.links)

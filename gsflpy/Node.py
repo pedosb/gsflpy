@@ -8,10 +8,28 @@ class Node():
       var=%d v wo Pronunciation variant number
       s=%s s o Semantic Tag
     """
-    __init__(self, i, t, w, l, v, s):
+    def __init__(self, i,\
+	    t = None,\
+	    w = None,\
+	    l = None,\
+	    v = None,\
+	    s = None):
 	self.i = i
 	self.t = t
 	self.w = w
 	self.l = l
 	self.v = v
 	self.s = s
+    def __str__(self):
+	node_str = 'I=' + self.i
+	if self.t:
+	    node_str = node_str + ' t=' + self.t
+	if self.w:
+	    node_str = node_str + ' W=' + self.w
+	if self.l:
+	    node_str = node_str + ' L=' + self.l
+	if self.v:
+	    node_str = node_str + ' v=' + self.v
+	if self.s:
+	    node_str = node_str + ' s=' + self.s
+	return node_str

@@ -2,6 +2,7 @@ from ArgumentNotFoundError import ArgumentNotFoundError
 from Lattice import Lattice
 from Node import Node
 from Link import Link
+from Segment import Segment
 
 class ReadLattice():
     COMMENT_CHAR = '#'
@@ -74,11 +75,24 @@ class ReadLattice():
 	else:
 	    ArgumentNotFoundError(self.line, 'I = identifier expected')
 
-    def parse_segment(self, segment):
-        
+    def parse_segment(self, segment_unit):
+       segment_values = segment_unit.split(',')
+       try:
+	  return Segment(segment_values[0], \
+		float(segment_values[1]), \
+		float(segment_values[2]))
+       except IndexError:
+	  raise ArgumentNotFoundError('NOTHING', \
+		  'float number for segment')
 
     def read_segment(self, segment):
-        
+       segments = []
+       for segment_unit in segment.split(':'):
+	  if segment_unit == "":
+	     continue
+	  else:
+	     segments.append(self.parse_segment(segment_unit))
+       return segments
 
     def parse_link(self):
 	"""
@@ -119,7 +133,7 @@ class ReadLattice():
 	    else:
 		raise ArgumentNotFoundError(self.line)
 	if j != None or s != None or e != None:
-	    self.links[j] = Link(j, s, e, a, l, r, w, v, d)
+	    self.links[j] = Link(j, s, e, w, v, d, a, l, r)
 	else:
 	    ArgumentNotFoundError(self.line, 'J, S and E expected ' +\
 		    'see htkbook for arcs specifications')

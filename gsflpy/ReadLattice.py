@@ -76,6 +76,10 @@ class ReadLattice():
 	    ArgumentNotFoundError(self.line, 'I = identifier expected')
 
     def parse_segment(self, segment_unit):
+       """
+       The segment_unit must be a single string in the format:
+       state(string),float,float
+       """
        segment_values = segment_unit.split(',')
        try:
 	  return Segment(segment_values[0], \
@@ -86,6 +90,10 @@ class ReadLattice():
 		  'float number for segment')
 
     def read_segment(self, segment):
+       """
+       The segment must be a string in the format:
+       :state(string),float,float:state(string),float,float:...:
+       """
        segments = []
        for segment_unit in segment.split(':'):
 	  if segment_unit == "":
@@ -139,6 +147,9 @@ class ReadLattice():
 		    'see htkbook for arcs specifications')
 
     def parse(self, lat_file):
+       """
+       We expect a lattice file with at least the nodes and links specifications
+       """
         self.line_number = 0
 	for self.line in open(lat_file):
 	    self.line_number = self.line_number + 1

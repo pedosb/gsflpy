@@ -59,27 +59,29 @@ if __name__ == "__main__":
       else:
 	 print 'WARNING: Correct sentence not found!!!'
 
-   if correct_sentence:
-      for sentence in sentences:
-	 if sentence == correct_sentence or sentence == sentences[0]:
-	    sentence.plot = True
-	 else:
-	    sentence.plot = False
+      if correct_sentence:
+	 for sentence in sentences:
+	    if sentence == correct_sentence or sentence == sentences[0]:
+	       sentence.plot = True
+	    else:
+	       sentence.plot = False
 
-      import matplotlib.pyplot as plt
-      for sentence in sentences:
-	 if sentence.plot:
-	    sentence.score_points = []
-	    for link in sentence.links:
-	       if link.d:
-		  for segment in link.d:
-		     for i in range(segment.length*100):
-			sentence.score_points.append(segment.score)
-	    plot_setting = ''
-	    print sentence
-	    if sentence == correct_sentence:
-	       plot_setting += 'g'
-	    plt.plot(sentence.score_points, plot_setting)
-      plt.ylabel('score')
-      plt.xlabel('time')
-      plt.show()
+	 import matplotlib.pyplot as plt
+	 figure = plt.figure()
+	 for sentence in sentences:
+	    if sentence.plot:
+	       sentence.score_points = []
+	       for link in sentence.links:
+		  if link.d:
+		     for segment in link.d:
+			for i in range(segment.length*100):
+			   sentence.score_points.append(segment.score)
+	       plot_setting = ''
+	       print sentence
+	       if sentence == correct_sentence:
+		  plot_setting += 'g'
+	       plt.plot(sentence.score_points, plot_setting, label=str(sentence))
+	 plt.ylabel('score')
+	 plt.xlabel('time')
+	 plt.legend()
+	 plt.show()

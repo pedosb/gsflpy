@@ -71,16 +71,32 @@ if __name__ == "__main__":
 	 for sentence in sentences:
 	    if sentence.plot:
 	       sentence.score_points = []
+	       sentence.states_points = []
+	       last_state = None
 	       for link in sentence.links:
 		  if link.d:
 		     for segment in link.d:
 			for i in range(segment.length*100):
+			   if not last_state:
+			      last_state = segment.state
+			      count_state = 0
+			      initial_point = len(sentence.score_points)
+			   elif last_state == segment.state:
+			      count_state += 1
+			   else:
+			      x_point = (count_state / 2) + initial_point
+			      sentence.states_points.append([last_state, x_point, sentence.score_points[x_point]])
+			      last_state = None
 			   sentence.score_points.append(segment.score)
 	       plot_setting = ''
 	       print sentence
 	       if sentence == correct_sentence:
 		  plot_setting += 'g'
+		  for points in sentence.states_points:
+		     plt.text(points[1], points[2], str(points[0]))
 	       plt.plot(sentence.score_points, plot_setting, label=str(sentence))
+	       for points in sentence.states_points:
+		  plt.text(points[1], points[2], str(points[0]))
 	 plt.ylabel('score')
 	 plt.xlabel('time')
 	 plt.legend()

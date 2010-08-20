@@ -15,7 +15,10 @@ class Node():
 	    v = None,\
 	    s = None):
 	self.i = i
-	self.t = int(t)
+	if t:
+           self.t = int(t)
+	else:
+	   self.t = None
 	self.w = w
 	self.l = l
 	self.v = v

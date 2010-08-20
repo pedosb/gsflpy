@@ -5,4 +5,4 @@ from ReadLattice import ReadLattice
 if __name__ == "__main__":
     read = ReadLattice()
     lattice = read.parse(sys.argv[1])
-    print lattice
+    lattice.search_sentences()

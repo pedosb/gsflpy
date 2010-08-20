@@ -27,7 +27,7 @@ class Lattice:
 
        return nodes_str + '\n' + links_str
 
-   def search_sentences(self):
+   def get_start_and_end_node(self):
        #starts the nodes that is shown in links as 's' and as 'e'
        e_nodes = []
        s_nodes = []
@@ -60,20 +60,34 @@ class Lattice:
 	     print str(node)
           exit(-1)
 
-       #Mark the start and end nodes
-       start_node = start_nodes[0]
-       del start_nodes
-       end_node = end_nodes[0]
-       del end_nodes
+       return start_nodes[0], end_nodes[0]
 
+   def prunning(self):
+      if not self._MAX_WORDS:
+	 return
+      out = []
+      for sentence in self.sentences:
+	 if len(sentence.nodes) > self._MAX_WORDS:
+	    out.append(sentence)
+      for out_sentence in out:
+	 self.sentences.remove(out_sentence)
+
+   def search_sentences(self, \
+	 max_words = None):
+       if max_words:
+          self._MAX_WORDS = int(max_words)
+       else:
+	  self._MAX_WORDS = None
+
+       start_node, end_node = self.get_start_and_end_node()
        #Start sentences by the start node
-       sentences = []
+       self.sentences = []
        for link in self.links.itervalues():
 	  if start_node == link.s:
-	     sentences.append(Sentence(link))
+	     self.sentences.append(Sentence(link))
 
        #Search sentences
-       sentence = sentences[0]
+       sentence = self.sentences[0]
        while True:
 	  acessed_sentence = False
 	  for link in self.links.itervalues():
@@ -85,18 +99,20 @@ class Lattice:
 		if acessed_sentence:
 		   new_sentence = sentence.copy()
 		   new_sentence += link
-		   sentences.append(new_sentence)
+		   self.sentences.append(new_sentence)
 	        else:
 		   sentence += link
 		   acessed_sentence = True
 	  if sentence.last_node == end_node:
 	     sentence.ready = True
-	  for sentence in sentences:
+	  self.prunning()
+	  for sentence in self.sentences:
              if not sentence.ready:
                 break
 	  if sentence.ready:
 	     break
-       return sentences
+       print len(self.sentences)
+       return self.sentences
 	  
 
 

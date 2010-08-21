@@ -7,11 +7,12 @@ from Segment import Segment
 class ReadLattice():
     COMMENT_CHAR = '#'
 
-    def __init__(self):
+    def __init__(self, VERBOSE = None):
 	self.node_number = None
 	self.link_number = None
 	self.nodes = dict()
 	self.links = dict()
+	self.VERBOSE = VERBOSE
 
     def split_argument_unit(self, argument_unit):
 	words = argument_unit.split('=')
@@ -184,4 +185,4 @@ class ReadLattice():
 
 	print self.node_number
 	print self.link_number
-	return Lattice(self.nodes, self.links)
+	return Lattice(self.nodes, self.links, VERBOSE=self.VERBOSE)

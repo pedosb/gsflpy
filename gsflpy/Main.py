@@ -6,12 +6,10 @@ def usage():
    print 'Usage: ' + sys.argv[0] + ' ' +\
 	 '-l <lattice_file> ' +\
 	 '[-w <int_number>] ' +\
-	 '[-c <string>] ' +\
-	 '[-o <figure.png>]'
+	 '[-c <string>]'
    print '  -l: File that contains the lattice.'
    print '  -w: Max number of nodes per sentence.'
    print '  -c: Correct sentence.'
-   print '  -o: Name of a file to store the figure (png).'
    exit(-1)
 
 def find_correct(sentences):
@@ -27,7 +25,6 @@ if __name__ == "__main__":
    LAT_FILE = None
    MAX_NODE = None
    CORRECT_SENTENCE = None
-   OUT_FIGURE = None
 
    if len(sys.argv) == 1:
       usage()
@@ -41,8 +38,6 @@ if __name__ == "__main__":
 	    MAX_NODE = int(sys.argv[count+1])
 	 elif sys.argv[count][1] == 'c':
 	    CORRECT_SENTENCE = sys.argv[count+1].strip()
-	 elif sys.argv[count][1] == 'o':
-	    OUT_FIGURE = sys.argv[count+1].strip()
 	 else:
 	    usage()
 	 count += 2
@@ -72,12 +67,11 @@ if __name__ == "__main__":
 	       sentence.plot = False
 
 	 import matplotlib.pyplot as plt
-	 figure = plt.figure(figsize=(20,15))
+	 figure = plt.figure()
 	 for sentence in sentences:
 	    if sentence.plot:
 	       sentence.score_points = []
 	       sentence.states_points = []
-	       sentence.state_transition_points = []
 	       last_state = None
 	       for link in sentence.links:
 		  if link.d:
@@ -87,7 +81,6 @@ if __name__ == "__main__":
 			      last_state = segment.state
 			      count_state = 0
 			      initial_point = len(sentence.score_points)
-			      sentence.state_transition_points.append([initial_point, segment.score])
 			   elif last_state == segment.state:
 			      count_state += 1
 			   else:
@@ -98,25 +91,13 @@ if __name__ == "__main__":
 	       plot_setting = ''
 	       print sentence
 	       if sentence == correct_sentence:
-		  color = 'c'
 		  plot_setting += 'g'
-	       else:
-		  color = 'r'
-		  plot_setting += 'b'
-
-	       for points in sentence.state_transition_points:
-		  plt.plot(points[0], points[1], 'o' + plot_setting, ms=8)
+		  for points in sentence.states_points:
+		     plt.text(points[1], points[2], str(points[0]))
+	       plt.plot(sentence.score_points, plot_setting, label=str(sentence))
 	       for points in sentence.states_points:
-		  plt.text(points[1], points[2], str(points[0]), dict(color=color, size='12', weight='semibold'))
-
-	       plt.plot(sentence.score_points, plot_setting, label=str(sentence), linewidth=1.5)
-
-	       print len(sentence.state_transition_points)
-	       print len(sentence.states_points)
+		  plt.text(points[1], points[2], str(points[0]))
 	 plt.ylabel('score')
 	 plt.xlabel('time')
 	 plt.legend()
-	 if OUT_FIGURE:
-	    plt.savefig(OUT_FIGURE, orientation='landscape', format='png', papertype='a0')
-	 else:
-	    plt.show()
+	 plt.show()

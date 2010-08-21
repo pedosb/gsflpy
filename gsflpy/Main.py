@@ -72,7 +72,7 @@ if __name__ == "__main__":
 	       sentence.plot = False
 
 	 import matplotlib.pyplot as plt
-	 figure = plt.figure(figsize=(20,15))
+	 figure = plt.figure(figsize=(20,15), dpi=200)
 	 for sentence in sentences:
 	    if sentence.plot:
 	       sentence.score_points = []

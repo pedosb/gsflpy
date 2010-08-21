@@ -154,7 +154,7 @@ class ReadLattice():
         self.line_number = 0
 	for self.line in open(lat_file):
 	    self.line_number = self.line_number + 1
-	    if self.line.startswith(self.COMMENT_CHAR):
+	    if self.line.startswith(self.COMMENT_CHAR) or self.line.strip() == '':
 		continue
 	    self.current_arg_name = self.line.split()[0].split('=')[0]
 

@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import sys
 from ReadLattice import ReadLattice
+from Sentence import Sentence
 
 def usage():
    print 'Usage: ' + sys.argv[0] + ' ' +\
@@ -11,6 +12,7 @@ def usage():
 	 '[-v]'
    print '  -l: File that contains the lattice.'
    print '  -w: Max number of nodes per sentence.'
+   print '  -s: Max score diff (for prunning).'
    print '  -c: Correct sentence.'
    print '  -o: Name of a file to store the figure (png).'
    print '  -v: Show more status information.'
@@ -31,6 +33,8 @@ if __name__ == "__main__":
    CORRECT_SENTENCE = None
    OUT_FIGURE = None
    VERBOSE = None
+   MAX_SCORE_DIFF = None
+   MAX_FRAME_DIFF = None
 
    if len(sys.argv) == 1:
       usage()
@@ -48,6 +52,11 @@ if __name__ == "__main__":
 	    OUT_FIGURE = sys.argv[count+1].strip()
 	 elif sys.argv[count][1] == 'v':
 	    VERBOSE = True
+	    count -= 1
+	 elif sys.argv[count][1] == 's':
+	    MAX_FRAME_DIFF = float(sys.argv[count+2])
+	    MAX_SCORE_DIFF = float(sys.argv[count+1])
+	    count += 1
 	 else:
 	    usage()
 	 count += 2
@@ -56,8 +65,12 @@ if __name__ == "__main__":
 
    read = ReadLattice(VERBOSE=VERBOSE)
    lattice = read.parse(LAT_FILE)
-   sentences = lattice.search_sentences(MAX_NODE)
-   sentences.sort()
+   sentences = lattice.search_sentences(max_words = MAX_NODE, \
+	 max_score_diff = MAX_SCORE_DIFF, \
+	 max_frame_diff = MAX_FRAME_DIFF)
+   sentences.sort(Sentence.cmp_score, reverse=True)
+#   for sentence in sentences:
+#      print str(sentence)
    print 'Recognized:'
    print str(sentences[0]) + '  ' + str(sentences[0]._score)
    if CORRECT_SENTENCE:

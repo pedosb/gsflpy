@@ -157,6 +157,9 @@ class Lattice:
       count = 0
       sentence.add(start_node)
       self.links.sort(cmp=Link.cmp_s)
+      nodes_s = []
+      for link in self.links:
+	 nodes_s.append(link.s)
       while True:
 	 if count > 1000:
 	    print sentence
@@ -176,17 +179,19 @@ class Lattice:
 	 is_pri = True
 	 last_node = sentence.last_node
 
-	 for link in self.links:
-	    if last_node == link.s:
+	 index = nodes_s.index(last_node)
+	 while True:
 #	       print 'S=' + str(link.s.i) + ' E=' + str(link.e.i)
+	    if last_node == self.links[index]:
 	       if is_pri:
 		  is_pri = False
-		  sentence.add(link)
+		  sentence.add(self.links[index])
 	       else:
 		  new_sentence = sentence.copy()
-		  new_sentence.add(link)
+		  new_sentence.add(self.links[index])
 		  self.sentences.append(new_sentence)
-	    elif not is_pri:
+	       index += 1
+	    else:
 	       break
 
 	 if sentence.last_node == end_node:

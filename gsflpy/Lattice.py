@@ -164,25 +164,27 @@ class Lattice:
 #	 print sentence
 
 	 if sentence.ready or len(sentence.nodes) > self._MAX_WORDS:
+	    to_remove = sentence
+	    if sentence.ready:
+	       if sentence.last_node == end_node:
+		  self.sentences_ready.append(sentence)
 	    try:
 	       sentence = self.sentences[self.sentences.index(sentence)+1]
 	    except IndexError:
 	       break
+	    self.sentences.remove(to_remove)
 	    continue
 
 	 is_pri = True
-	 is_change = False
 	 last_node = sentence.last_node
 
 	 for link in self.links:
 	    if not last_node:
 	       sentence.add(start_node)
 	       is_pri = False
-	       is_change = True
 	       break
 	    if last_node == link.s:
 #	       print 'S=' + str(link.s.i) + ' E=' + str(link.e.i)
-	       is_change = True
 	       if is_pri:
 		  is_pri = False
 		  sentence.add(link)
@@ -192,18 +194,9 @@ class Lattice:
 		  self.sentences.insert(0, new_sentence)
 
 	 sentence.ready = is_pri
-	 if not is_change:
-	    try:
-	       sentence = self.sentences[self.sentences.index(sentence)+1]
-	    except IndexError:
-	       break
-	 else:
+	 if not is_pri:
 	    sentence = self.sentences[0]
 
-      print len(self.sentences)
-      for sentence in self.sentences:
-	 if sentence.last_node != end_node:
-	    self.sentences.remove(sentence)
-      print len(self.sentences)
-      return self.sentences
+      print len(self.sentences_ready)
+      return self.sentences_ready
 

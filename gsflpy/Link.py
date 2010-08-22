@@ -59,3 +59,11 @@ class Link():
 	  return -1
        else:
 	  return 0
+
+    def cmp_s(self, other):
+      if self.s > other.s:
+	 return 1
+      elif self.s < other.s:
+	 return -1
+      else:
+	 return 0

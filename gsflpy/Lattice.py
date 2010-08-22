@@ -182,16 +182,19 @@ class Lattice:
 	 index = nodes_s.index(last_node)
 	 while True:
 #	       print 'S=' + str(link.s.i) + ' E=' + str(link.e.i)
-	    if last_node == self.links[index]:
-	       if is_pri:
-		  is_pri = False
-		  sentence.add(self.links[index])
+	    try:
+	       if last_node == self.links[index].s:
+		  if is_pri:
+		     is_pri = False
+		     sentence.add(self.links[index])
+		  else:
+		     new_sentence = sentence.copy()
+		     new_sentence.add(self.links[index])
+		     self.sentences.append(new_sentence)
+		  index += 1
 	       else:
-		  new_sentence = sentence.copy()
-		  new_sentence.add(self.links[index])
-		  self.sentences.append(new_sentence)
-	       index += 1
-	    else:
+		  break
+	    except IndexError:
 	       break
 
 	 if sentence.last_node == end_node:

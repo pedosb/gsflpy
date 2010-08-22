@@ -3,23 +3,23 @@ from Link import Link
 
 class Lattice:
    def __init__(self, nodes, links, VERBOSE = None):
-      if isinstance(nodes, dict) and \
-	    isinstance(links, dict):
+      if isinstance(nodes, list) and \
+	    isinstance(links, list):
          self.nodes = nodes
          self.links = links
 	 self.VERBOSE = VERBOSE
       #TODO: exception here
       else:
-	 print 'nodes and links must be a dict instance' + \
+	 print 'nodes and links must be a list instance' + \
 	       'was found:'
-	 if isinstance(nodes, dict):
+	 if isinstance(nodes, list):
 	    print 'Links:' + str(links)
 	 else:
 	    print 'Nodes' + str(nodes)
 
    def __str__(self):
        nodes_str = ''
-       for node in self.nodes.itervalues():
+       for node in self.nodes:
           nodes_str += '\n' + str(node)
 
        links_str = ''
@@ -34,7 +34,7 @@ class Lattice:
        #starts the nodes that is shown in links as 's' and as 'e'
        e_nodes = []
        s_nodes = []
-       for link in self.links.itervalues():
+       for link in self.links:
 	  if link.e not in e_nodes:
 	     e_nodes.append(link.e)
           if link.s not in s_nodes:
@@ -43,7 +43,7 @@ class Lattice:
        #if there is a start node and an end node respectively
        end_nodes = []
        start_nodes = []
-       for node in self.nodes.itervalues():
+       for node in self.nodes:
 	  if node not in e_nodes:
 	     start_nodes.append(node)
 	  if node not in s_nodes:
@@ -137,88 +137,73 @@ class Lattice:
 	 max_words = None, \
 	 max_score_diff = None, \
 	 max_frame_diff = None):
-       if max_words:
-          self._MAX_WORDS = int(max_words)
-       else:
-	  self._MAX_WORDS = None
-       if max_score_diff and max_frame_diff:
-	  self._MAX_SCORE_DIFF = max_score_diff
-	  self._MAX_FRAME_DIFF = max_frame_diff
-       else:
-	  self._MAX_SCORE_DIFF = None
-	  self._MAX_FRAME_DIFF = None
+      if max_words:
+	 self._MAX_WORDS = int(max_words)
+      else:
+	 self._MAX_WORDS = None
+      if max_score_diff and max_frame_diff:
+	 self._MAX_SCORE_DIFF = max_score_diff
+	 self._MAX_FRAME_DIFF = max_frame_diff
+      else:
+	 self._MAX_SCORE_DIFF = None
+	 self._MAX_FRAME_DIFF = None
 
+      start_node, end_node = self.get_start_and_end_node()
+	 
+      self.sentences = [Sentence()]
+      self.sentences_ready = []
+      last_node = start_node
+      sentence = self.sentences[0]
+      self.links.sort(cmp=Link.cmp_id)
+      count = 0
+      while True:
+	 if count > 1000:
+	    print sentence
+	    count = 0
+	 count += 1
+#	 print sentence
 
-       start_node, end_node = self.get_start_and_end_node()
-       #Start sentences by the start node
-       self.sentences = []
-       self.sentences_ready = []
-       for link in self.links.itervalues():
-	  if start_node == link.s:
-	     self.sentences.append(Sentence(link))
+	 if sentence.ready or len(sentence.nodes) > self._MAX_WORDS:
+	    try:
+	       sentence = self.sentences[self.sentences.index(sentence)+1]
+	    except IndexError:
+	       break
+	    continue
 
-       #Search sentences
-       sentence = self.sentences[0]
-       last_prunning = 0
-       while True:
-	  acessed_sentence = False
-	  last_node = sentence.last_node
+	 is_pri = True
+	 is_change = False
+	 last_node = sentence.last_node
 
-	  for link in self.links.itervalues():
-	     #if there is a link that start with the last node of the sentence
-	     if last_node == link.s:
-		#if the sentence has already make a trasition with the
-		#last_node we need to make a copy of the sentence to do
-		# a new transition
-		if acessed_sentence:
-		   new_sentence = sentence.copy()
-		   new_sentence.add(link)
-		   self.sentences.append(new_sentence)
-	        else:
-		   sentence.add(link)
-		   acessed_sentence = True
+	 for link in self.links:
+	    if not last_node:
+	       sentence.add(start_node)
+	       is_pri = False
+	       is_change = True
+	       break
+	    if last_node == link.s:
+#	       print 'S=' + str(link.s.i) + ' E=' + str(link.e.i)
+	       is_change = True
+	       if is_pri:
+		  is_pri = False
+		  sentence.add(link)
+	       else:
+		  new_sentence = sentence.copy()
+		  new_sentence.add(link)
+		  self.sentences.insert(0, new_sentence)
 
-	  if sentence.last_node == end_node:
-	     sentence.ready = True
-	     self.sentences_ready.append(sentence)
-	     self.sentences_ready.sort(cmp=Sentence.cmp_score, reverse=True)
-#	     print 'READY MAP SCORE ' + str(self.sentences_ready[0]._score) + ' ' + \
-#		   str(self.sentences_ready[len(self.sentences_ready)-1]._score)
-	     self.sentences.remove(sentence)
-	     
-	  sentences_len = len(self.sentences)
-	  if len(self.sentences_ready) > 1 and sentences_len > 2000 or last_prunning > 1000:
-	     if sentences_len > 0:
-		self.prunning()
-		last_prunning = 0
-	  else:
-	     last_prunning += 1
+	 sentence.ready = is_pri
+	 if not is_change:
+	    try:
+	       sentence = self.sentences[self.sentences.index(sentence)+1]
+	    except IndexError:
+	       break
+	 else:
+	    sentence = self.sentences[0]
 
-	  if len(self.sentences) == 0:
-	     break
-	  sentence = self.sentences[0]
-       print len(self.sentences_ready)
-       return self.sentences_ready
-	  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      print len(self.sentences)
+      for sentence in self.sentences:
+	 if sentence.last_node != end_node:
+	    self.sentences.remove(sentence)
+      print len(self.sentences)
+      return self.sentences
 

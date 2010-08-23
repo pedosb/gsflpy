@@ -2,11 +2,11 @@
 #include "stdbool.h"
 
 typedef struct node_link{
-   int node;
+   long int node;
    struct node_link *next;
 }Node_link;
 
-Node_link *new_node_link(int node){
+Node_link *new_node_link(long int node){
    Node_link *nl = (Node_link*) malloc(sizeof(Node_link));
    nl->node = node;
    nl->next = NULL;
@@ -16,7 +16,7 @@ Node_link *new_node_link(int node){
 /**
  * insert the node at the end of nl
  */
-void add_node(Node_link *nl, int node){
+void add_node(Node_link *nl, long int node){
    Node_link *new_nl = (Node_link*) new_node_link(node);
    Node_link *sNl;
 
@@ -39,8 +39,8 @@ Node_link *copy_node_link(Node_link *nl){
 typedef struct sent_link{
    Node_link *nl;
    bool ready;
-   int last_node;
-   int node_count;
+   long int last_node;
+   long int node_count;
    struct sent_link *next;
 }Sent_link;
 
@@ -65,22 +65,22 @@ Sent_link *add_sent_link(Sent_link *sl, Node_link *nl){
    return new_sl;
 }
 
-Sent_link *sent_link_add_node(Sent_link *sl, int node){
+void sent_link_add_node(Sent_link *sl, long int node){
    sl->last_node = node;
    add_node(sl->nl, node);
    sl->node_count++;
 }
 
-int search_core(int start_node,
-      int end_node,
-      int nodes_lenght,
-      int ***links,
-      int MAX_NODES){
+long int search_core(long int start_node,
+      long int end_node,
+      long int nodes_lenght,
+      bool **links,
+      long int MAX_NODES){
 
-   int i, j,
+   long int i, j,
        last_node;
    Sent_link *sl = new_sent_link(new_node_link(start_node));
-   Sent_link *sSl;
+   Sent_link *sSl = sl;
 
    bool isPriSl;
    i = sSl->last_node;
@@ -95,7 +95,7 @@ int search_core(int start_node,
       last_node = sSl->last_node;
 
       for (j = 0; j < nodes_lenght; j++){
-	 if (links[i][j] != NULL){
+	 if (links[i][j] == true){
 	    if (isPriSl){
 	       isPriSl = false;
 	       sent_link_add_node(sSl, j);
@@ -111,6 +111,74 @@ int search_core(int start_node,
       else
 	 sSl = sl;
    }
+   return 1;
 }
 
-int search(
+static PyObject *
+gsflc_search(PyObject *self, PyObject * args){
+   long int i, j,
+	len_links_list;
+   long int start_node,
+	end_node,
+	nodes_lenght,
+	MAX_NODES;
+
+   PyObject *links_list;
+   PyObject *link;
+
+   PyArg_ParseTuple(args, "lllOl",
+	 &start_node,
+	 &end_node,
+	 &nodes_lenght,
+	 &links_list,
+	 &MAX_NODES);
+
+   bool **links;
+   links = (bool**) malloc(sizeof(bool*) * nodes_lenght);
+   for (i = 0; i < nodes_lenght; i++){
+      links[i] = (bool*) malloc(sizeof(bool)*nodes_lenght);
+      for (j = 0; j < nodes_lenght; j++)
+	 links[i][j] = false;
+   }
+
+   len_links_list = PyList_Size(links_list);
+   for (i = 0; i < len_links_list; i++){
+      link = PyList_GetItem(links_list, i);
+      links[PyInt_AsLong(PyList_GetItem(link, 0))][PyInt_AsLong(PyList_GetItem(link, 1))] = true;
+   }
+
+#define _DEBUG
+#ifdef _DEBUG
+   printf("Start %d\nEnd %d\nLen %d\nMax %d\n",
+	 start_node,
+	 end_node,
+	 nodes_lenght,
+	 MAX_NODES);
+   for (i = 0; i < nodes_lenght; i++){
+      for (j = 0; j < nodes_lenght; j++)
+	 printf("%d ", links[i][j]);
+      printf("\n");
+   }
+#endif
+
+   search_core(start_node, end_node, nodes_lenght, links, MAX_NODES);
+
+   PyObject *returnList = PyList_New(10);
+   for (i = 0; i < 10; i++)
+      PyList_SetItem(returnList, i, Py_BuildValue("l", i));
+
+   return returnList;
+}
+
+static PyMethodDef gsflc_methods[] = {
+   {"search",  gsflc_search, METH_VARARGS,
+      "Searc for sentences in the graph."},
+   {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
+PyMODINIT_FUNC
+initgsflc(void)
+{
+       (void) Py_InitModule("gsflc", gsflc_methods);
+}
+

@@ -59,27 +59,40 @@ Sent_link *new_sent_link(Node_link *nl){
    return sl;
 }
 
+Sent_link *new_clear_sent_link(){
+   Sent_link *sl = (Sent_link*) malloc(sizeof(Sent_link));
+   sl->nl = NULL;
+   sl->next = NULL;
+   sl->ready = false;
+   sl->node_count = 0;
+   sl->last_node = -1;
+}
+
 Sent_link *add_sent_link(Sent_link *sl, Node_link *nl){
    Sent_link *new_sl = new_sent_link(nl);
    new_sl->next = sl;
    return new_sl;
 }
 
-void sent_link_add_node(Sent_link *sl, long int node){
+void sent_link_add_node(Sent_link *sl, long int link_id, long int node){
+   if (sl->nl != NULL)
+      add_node(sl->nl, link_id);
+   else
+      sl->nl = new_node_link(link_id);
    sl->last_node = node;
-   add_node(sl->nl, node);
    sl->node_count++;
 }
 
 long int search_core(long int start_node,
       long int end_node,
       long int nodes_lenght,
-      bool **links,
+      long int **links,
       long int MAX_NODES){
 
    long int i, j,
        last_node;
-   Sent_link *sl = new_sent_link(new_node_link(start_node));
+   Sent_link *sl = new_clear_sent_link();
+   sl->last_node = start_node;
    Sent_link *sSl = sl;
 
    bool isPriSl;
@@ -95,14 +108,14 @@ long int search_core(long int start_node,
       last_node = sSl->last_node;
 
       for (j = 0; j < nodes_lenght; j++){
-	 if (links[i][j] == true){
+	 if (links[i][j] != -1){
 	    if (isPriSl){
 	       isPriSl = false;
-	       sent_link_add_node(sSl, j);
+	       sent_link_add_node(sSl, links[i][j], j);
 	    }
 	    else{
 	       sl = add_sent_link(sl, copy_node_link(sSl->nl));
-	       sent_link_add_node(sl, j);
+	       sent_link_add_node(sl, links[i][j], j);
 	    }
 	 }
       }
@@ -111,6 +124,21 @@ long int search_core(long int start_node,
       else
 	 sSl = sl;
    }
+
+   /*
+   PyObject *sentList = PyList_New(0);
+   PyObject *sent;
+   Node_link *nl;
+   for (sSl = sl; sSl != NULL; sSl = sSl->next){
+      if (sSl->ready){
+	 sent = PyList_New(sSl->node_count);
+	 for (nl = sSl->nl, i = 0; nl != NULL; i++; nl = nl->next){
+	 }
+	 PyList_Insert(sentList, 0, sent);
+      }
+   }
+   */
+
    return 1;
 }
 
@@ -133,18 +161,18 @@ gsflc_search(PyObject *self, PyObject * args){
 	 &links_list,
 	 &MAX_NODES);
 
-   bool **links;
-   links = (bool**) malloc(sizeof(bool*) * nodes_lenght);
+   long int **links;
+   links = (long int**) malloc(sizeof(long int*) * nodes_lenght);
    for (i = 0; i < nodes_lenght; i++){
-      links[i] = (bool*) malloc(sizeof(bool)*nodes_lenght);
+      links[i] = (long int*) malloc(sizeof(long int)*nodes_lenght);
       for (j = 0; j < nodes_lenght; j++)
-	 links[i][j] = false;
+	 links[i][j] = -1;
    }
 
    len_links_list = PyList_Size(links_list);
    for (i = 0; i < len_links_list; i++){
       link = PyList_GetItem(links_list, i);
-      links[PyInt_AsLong(PyList_GetItem(link, 0))][PyInt_AsLong(PyList_GetItem(link, 1))] = true;
+      links[PyInt_AsLong(PyList_GetItem(link, 0))][PyInt_AsLong(PyList_GetItem(link, 1))] = i;
    }
 
 #define _DEBUG
@@ -163,9 +191,9 @@ gsflc_search(PyObject *self, PyObject * args){
 
    search_core(start_node, end_node, nodes_lenght, links, MAX_NODES);
 
-   PyObject *returnList = PyList_New(10);
+   PyObject *returnList = PyList_New(0);
    for (i = 0; i < 10; i++)
-      PyList_SetItem(returnList, i, Py_BuildValue("l", i));
+      PyList_Insert(returnList, 0, Py_BuildValue("l", i));
 
    return returnList;
 }

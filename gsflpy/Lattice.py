@@ -133,6 +133,37 @@ class Lattice:
       if self.VERBOSE:
 	 print 'The sentences was reduced to ' + str(len(self.sentences))
 
+   def search_sentences_c(self, \
+	 max_words = None):
+      if max_words:
+	 self._MAX_WORDS = int(max_words)
+      else:
+	 self._MAX_WORDS = None
+
+      start_node, end_node = self.get_start_and_end_node()
+
+      import gsflc
+
+      links_c = []
+      for link in self.links:
+	 links_c.append([self.nodes.index(link.s), self.nodes.index(link.e)])
+
+      sentences = gsflc.search(self.nodes.index(start_node),\
+	    self.nodes.index(end_node),\
+	    len(self.nodes),\
+	    links_c,\
+	    self._MAX_WORDS)
+
+      self.sentences = []
+
+      for sentence in sentences:
+	 new_sentence = Sentence()
+	 for link_index in sentence:
+	    new_sentence.add(self.links[link_index])
+	 self.sentences.insert(0, new_sentence)
+
+      return self.sentences
+
    def search_sentences(self, \
 	 max_words = None, \
 	 max_score_diff = None, \

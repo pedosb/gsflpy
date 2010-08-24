@@ -52,7 +52,7 @@ Sent_link *new_sent_link(Node_link *nl, long int node){
 
    sl->node_count = 0;
    Node_link *sNl;
-   for (sNl = nl; sNl->next != NULL; sNl = sNl->next)
+   for (sNl = nl; sNl != NULL; sNl = sNl->next)
       sl->node_count++;
 
    sl->last_node = node;
@@ -92,6 +92,11 @@ search_core(long int start_node,
       long int **links,
       long int MAX_NODES){
 
+   //Here we consider that nodes are trasitions ids and
+   //for a trasision a -> b -> c there is two trasitions
+   //but we passed for 3 nodes
+   MAX_NODES--;
+
    long int i, j;
    Sent_link *sl = NULL,
 	     *sSl = NULL;
@@ -113,7 +118,7 @@ search_core(long int start_node,
 	isMody;
    
    while (sSl != NULL){
-      if (sSl->ready || sSl->node_count > MAX_NODES){
+      if (sSl->ready || sSl->node_count >= MAX_NODES){
 	 sSl = sSl->next;
 	 continue;
       }

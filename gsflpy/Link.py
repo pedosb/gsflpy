@@ -53,9 +53,9 @@ class Link():
        return string
 
     def cmp_id(self, other):
-       if self.j > other.j:
+       if int(self.j) > int(other.j):
 	  return 1
-       elif self.j < other.j:
+       elif int(self.j) < int(other.j):
 	  return -1
        else:
 	  return 0

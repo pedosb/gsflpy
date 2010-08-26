@@ -58,7 +58,7 @@ class ReadLattice():
 	    words = self.split_argument_unit(argument_unit)
 
 	    if words[0] == 'I':
-		i = int(words[1])
+		i = words[1]
 	    elif words[0] == 't':
 		t = float(words[1])
 	    elif words[0] == 'W':
@@ -121,15 +121,15 @@ class ReadLattice():
 	    words = self.split_argument_unit(argument_unit)
 
 	    if words[0] == 'J':
-		j = int(words[1])
+		j = words[1]
 	    elif words[0] == 'S':
 	        if words[1] not in nodes_i:
 		    raise KeyNotFoundError(words[1], 'nodes')
-		s = int(self.nodes[nodes_i.index(words[1])])
+		s = self.nodes[nodes_i.index(words[1])]
 	    elif words[0] == 'E':
 		if words[1] not in nodes_i:
 		    raise KeyNotFoundError(words[1], 'nodes')
-		e = int(self.nodes[nodes_i.index(words[1])])
+		e = self.nodes[nodes_i.index(words[1])]
 	    elif words[0] == 'a':
 		a = words[1]
 	    elif words[0] == 'l':

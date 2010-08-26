@@ -143,7 +143,7 @@ class Lattice:
       start_node, end_node = self.get_start_and_end_node()
 
       import gsflc
-
+      self.links.sort(cmp=Link.cmp_id)
       links_c = []
       for link in self.links:
 	 links_c.append([self.nodes.index(link.s), self.nodes.index(link.e)])

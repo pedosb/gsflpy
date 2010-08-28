@@ -2,6 +2,7 @@
 import sys
 from ReadLattice import ReadLattice
 from Sentence import Sentence
+from ErrorSegment import ErrorSegment
 
 def usage():
    print 'Usage: ' + sys.argv[0] + ' ' +\
@@ -14,7 +15,7 @@ def usage():
 	 '[-v]'
    print '  -l: File that contains the lattice.'
    print '  -L: File that contains the path for lattice file (whithout spaces)'
-   print '      and followed by the correct transcription (one per line).'
+   print '      followed by the number of max words and then correct transcription (one per line).'
    print '  -w: Max number of nodes per sentence.'
    print '  -s: Max score diff (for prunning).'
    print '  -c: Correct sentence.'
@@ -98,6 +99,51 @@ def plot():
       else:
 	 plt.show()
 
+def plot_error_segment(error_segments):
+   time_count = 0
+   time_sum = 0
+   for error_segment in error_segments:
+      for correct_segment in error_segment.correct_segments:
+#	 print error_segment.file_name
+#	 print len(correct_segment)
+	 time_sum += len(correct_segment)
+	 time_count += 1
+	 
+   import math
+   import numpy as np
+   import matplotlib.pyplot as plt
+   import matplotlib.mlab as mlab
+
+   time_mean = time_sum / time_count
+   time_var = 0
+   for error_segment in error_segments:
+      for correct_segment in error_segment.correct_segments:
+	 time_var += math.pow(\
+	       (len(correct_segment) - time_mean), 2)
+   time_var = time_var / time_count
+
+   print 'mean ' + str(time_mean)
+   print 'var ' + str(time_var)
+   print 'sum ' + str(time_sum)
+   figure = plt.figure(figsize=(20,15), dpi=200)
+   x = np.arange(-time_var*5, time_var*5, 0.1)
+   y = mlab.normpdf(x, time_mean, time_var)
+   plt.xlabel('time')
+   plt.grid(True)
+   plt.plot(x,y)
+   plt.savefig('gauss')
+
+   y = []
+   figure = plt.figure(figsize=(60,35), dpi=700)
+   plt.grid(True)
+   for error_segment in error_segments:
+      y.append(len(error_segment.correct_segments))
+   plt.plot(y)
+   plt.ylabel('times')
+   plt.xlabel('id')
+   plt.savefig('times')
+#   plt.show()
+
 if __name__ == "__main__":
    LAT_FILE = None
    MAX_NODE = None
@@ -146,7 +192,6 @@ if __name__ == "__main__":
       else:
 	 usage()
    if isinstance(LAT_FILE, list):
-      print isinstance(LAT_FILE, list)
       index = 0
       error_segments = []
       for lat_file in LAT_FILE:
@@ -166,14 +211,18 @@ if __name__ == "__main__":
 	       print 'Correct was the sentence number ' + str(number + 1) + ':'
 	       print str(correct_sentence) + '  ' + \
 		     str(correct_sentence._score)
-   #	    plot()
+#	       print lat_file
+#	       plot()
 	       error_segments = lattice.get_error_segments(number, error_segments) 
 	       if VERBOSE:
 		  for error_segment in error_segments:
 		     print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
-		  print index
+	       print index
 	       del lattice, read, sentences
 	 index += 1
+      plot_error_segment(error_segments)
+      for error_segment in error_segments:
+	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
    else:
       read = ReadLattice(VERBOSE=VERBOSE)
       lattice = read.parse(LAT_FILE)

@@ -68,6 +68,19 @@ class Sentence():
 	 sentence.add(link)
       return sentence
 
+   def norm_segments(self):
+      """
+      Check if any of the segments in the sentence has
+      more than one frame per state, if it has, we
+      copy it to have only one state per frame.
+      """
+      self.segments = []
+      for link in self.links:
+	 if link.d:
+	    for segment in link.d:
+	       for i in range(int(segment.length*100)):
+		  self.segments.append(segment)
+
 
 
 

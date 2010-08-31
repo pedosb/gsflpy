@@ -4,6 +4,11 @@ class ErrorSegment():
 	 recognized_segments, \
 	 start_time, \
 	 file_name):
+      """
+      Create an ErrorSegment for one specific type of error, it is,
+      we do not care about the time it spend in each state but
+      the sequence of states, of both, correct and recognized sentence.
+      """
       if correct_segments and \
 	    recognized_segments and \
 	    start_time != None and \
@@ -49,7 +54,7 @@ class ErrorSegment():
 	 self.start_time.append(start_time)
 	 self.file_name.append(file_name)
 
-   def cmp_phoneme(self, other):
+   def __cmp__(self, other):
       if self.correct_states == other.correct_states and \
 	    self.recognized_states == other.recognized_states:
 	 return 0

@@ -6,12 +6,14 @@ from ErrorSegment import ErrorSegment
 
 def usage():
    print 'Usage: ' + sys.argv[0] + ' ' +\
-	 '((-l <lattice_file> ' +\
+	 '(((-l <lattice_file> ' +\
 	 '[-w <int_number>] ' +\
 	 '[-c <string>] ' +\
 	 '[-o <figure.png>]) | ' +\
-	 '-L <lattice_and_transcriptions_file_path>) ' + \
-	 '[-f <figure_sufix>] ' +\
+	 '(-L <lattice_and_transcriptions_file_path> ' + \
+	 '[-p <figure_sufix>])) | ' +\
+	 '[-f <in_error_file>]) | ' +\
+	 '[-F <out_error_file>] ' +\
 	 '[-v]'
    print '  -l: File that contains the lattice.'
    print '  -L: File that contains the path for lattice file (whithout spaces)'
@@ -20,6 +22,7 @@ def usage():
    print '  -s: Max score diff (for prunning).'
    print '  -c: Correct sentence.'
    print '  -F: File to write the correct and the recognized sentences with they score.'
+   print '  -f: File with the recognized sentences'
    print '  -o: Name of a file to store the figure (png).'
    print '  -p: sufix to be appended in the name of the latttice and write the' +\
         ' png file as output.'
@@ -173,6 +176,7 @@ if __name__ == "__main__":
    MAX_SCORE_DIFF = None
    MAX_FRAME_DIFF = None
    ERROR_SEGMENTS_OUT_FILE = None
+   ERROR_SEGMENTS_IN_FILE = None
 
    if len(sys.argv) == 1:
       usage()
@@ -209,12 +213,20 @@ if __name__ == "__main__":
 	    count += 1
 	 elif sys.argv[count][1] == 'F':
 	    ERROR_SEGMENTS_OUT_FILE = str(sys.argv[count+1])
+	 elif sys.argv[count][1] == 'f':
+	    ERROR_SEGMENTS_IN_FILE = str(sys.argv[count+1])
 	 else:
 	    usage()
 	 count += 2
       else:
 	 usage()
-   if isinstance(LAT_FILE, list):
+   if ERROR_SEGMENTS_IN_FILE:
+      read = ReadLattice(VERBOSE=VERBOSE)
+      error_segments = read.parse_error_segment_file(ERROR_SEGMENTS_IN_FILE)
+      for error_segment in error_segments:
+	 print str(error_segment) + ' ' + str(len(error_segment.correct_segments))
+
+   elif isinstance(LAT_FILE, list):
       index = 0
       error_segments = []
       for lat_file in LAT_FILE:

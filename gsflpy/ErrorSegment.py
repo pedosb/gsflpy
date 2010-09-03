@@ -1,34 +1,31 @@
 class ErrorSegment():
    def __init__(self, \
-	 correct_segments, \
-	 recognized_segments, \
+	 segments, \
+	 correct_index, \
 	 start_time, \
 	 file_name):
       """
       Create an ErrorSegment for one specific type of error, it is,
       we do not care about the time it spend in each state but
       the sequence of states, of both, correct and recognized sentence.
+      The segments list must be sorted this is the correct sentence must
+      be the first one, and correct_index the index in this list
+      that corresponds to the correct sentence.
       """
-      if correct_segments and \
-	    recognized_segments and \
-	    start_time != None and \
-	    (file_name or file_name == ""):
-	 self.correct_segments = []
-	 self.recognized_segments = []
-	 self.start_time = []
-	 self.file_name = []
+      self.segments = []
+      self.correct_index = []
+      self.start_time = []
+      self.file_name = []
 
-	 self.add(correct_segments, \
-		  recognized_segments, \
-		  start_time, \
-		  file_name)
+      self.add(segments, \
+	       correct_index, \
+	       start_time, \
+	       file_name)
 
-	 self.correct_states = self.set_state_string(\
-	       self.correct_segments[0])
-	 self.recognized_states = self.set_state_string(\
-	       self.recognized_segments[0])
-      else:
-	 print 'WARNING: Error segment with broken argument'
+      self.recognized_states = self.set_state_string(\
+	    self.segments[0][0])
+      self.correct_states = self.set_state_string(\
+	    self.segments[0][self.correct_index])
 
    def set_state_string(self, segments):
       last_state = None
@@ -41,18 +38,22 @@ class ErrorSegment():
       return state_string
 
    def add(self, \
-	 correct_segments, \
-	 recognized_segments, \
+	 segments, \
+	 correct_index, \
 	 start_time, \
 	 file_name):
-      if correct_segments and \
-	    recognized_segments and \
+      if segments and \
+	    correct_index != None and \
 	    start_time != None and \
 	    (file_name or file_name == ""):
-	 self.correct_segments.append(correct_segments)
-	 self.recognized_segments.append(recognized_segments)
+	 self.segments.append(segments)
+	 self.correct_index.append(correct_index)
 	 self.start_time.append(start_time)
 	 self.file_name.append(file_name)
+      else:
+	 #TODO exception here
+	 print 'WARNING: Error segment with a broken argument'
+	 exit(-1)
 
    def __cmp__(self, other):
       if self.correct_states == other.correct_states and \

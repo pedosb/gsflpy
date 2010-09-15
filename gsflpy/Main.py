@@ -159,9 +159,10 @@ def write_error_segmets(error_segments):
 	 file_out.write(str(error_segment.start_time[i]))
 	 file_out.write(';')
 	 file_out.write(str(error_segment.correct_index[i]))
-	 file_out.write(';:')
 	 for segment in segments:
-	    file_out.write(str(segment))
+	    file_out.write(';:')
+	    for segment_unit in segment:
+	       file_out.write(str(segment_unit))
 	 file_out.write(';\n')
 	 i += 1
    file_out.flush()
@@ -259,7 +260,7 @@ if __name__ == "__main__":
 	 index += 1
       #plot_error_segment(error_segments)
       for error_segment in error_segments:
-	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
+	 print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
       write_error_segmets(error_segments)
    else:
       read = ReadLattice(VERBOSE=VERBOSE)

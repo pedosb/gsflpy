@@ -256,9 +256,9 @@ class Lattice:
       for sentence in self.sentences:
 	 sentence.norm_segments()
 	 if not frames_n:
-	    frames_n = len(sentence)
+	    frames_n = len(sentence.segments)
 	    continue
-	 if len(sentence) != frames_n:
+	 if len(sentence.segments) != frames_n:
 	    #TODO Exception here
 	    print "Error sentences to be compared must have the same number of frames."
 	    exit(-1)
@@ -278,7 +278,7 @@ class Lattice:
 	       start_time = frame
 	       segments = []
 	       for sentence in self.sentences:
-		  segments.append([setence.segments[frame]])
+		  segments.append([sentence.segments[frame]])
 	    else:
 	       i = 0
 	       for sentence in self.sentences:
@@ -288,7 +288,7 @@ class Lattice:
 	    confusion_region = False
 	    util.add_error_segment(self.error_segments, \
 		  ErrorSegment(segments,\
-		     self.correct_sentence_index, \
+		     correct_sentence_index, \
 		     start_time, \
 		     self.file_name))
 

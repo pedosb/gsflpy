@@ -25,7 +25,7 @@ class ErrorSegment():
       self.recognized_states = self.set_state_string(\
 	    self.segments[0][0])
       self.correct_states = self.set_state_string(\
-	    self.segments[0][self.correct_index])
+	    self.segments[0][self.correct_index[0]])
 
    def set_state_string(self, segments):
       last_state = None

@@ -1,0 +1,112 @@
+\documentclass[a4paper,10pt]{article}
+
+\usepackage[brazilian]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+
+%opening
+\title{}
+\author{}
+
+\begin{document}
+
+%\maketitle
+
+%\begin{abstract}
+
+%\end{abstract}
+
+%\section{}
+
+Proposta: An Heterogeneous and Plastic Front-end. \\
+
+Etapas:
+
+\begin{enumerate}
+ \item Utilizar o HVite (ferramenta do HTK) para gerar lattices com score acústico frame-a-frame.
+ \item Confusion detection:
+    \begin{itemize}
+    \item Construir classificadores binários, ou seja, capazes de detectar se há ou não confusão. Esses classificadores serão treinados usando o WEKA e durante a fase de teste (quando não sabemos qual é a transcrição correta) devem identificar pontos com alta confusabilidade.
+    \item Construir classificadores de confusão capazes de definir e identificar $S$ situações de confusabilidade. Por exemplo, visualizar grande concorrência entre um determinado número de fones. \\
+    Seria possível encaixar essa observação em alguma característica linguística: consoantes fricativas, vozeadas?
+    \end{itemize}
+ \item Score detection:
+    \begin{itemize}
+    \item Construir classificadores de correção (feature selection) para encontrar as features de entrada (MFCC, PLP, etc.) para treinar $S$ classificadores. Daí que vem a ideia de heterogeneidade.\\ Mas não ficou claro como treinar esses classificadores:\\
+    Como associar confusão entre fones à uma determinada feature?\\
+    Como encontrar a melhor feature para um dado classificador $S$?
+    \end{itemize}
+\end{enumerate}
+
+
+
+Trabalhando com o HTK:\\
+
+O HTK 3.3 não permite utilizar os parâmetros -f e -n juntos. O
+executável \emph{hviter.exe} gera scores acústicos frame-a-frame no
+campo \emph{d} da lattice. Para isso, alterações no código foram
+feitas: arquivo \emph{HRecer.c}. Esse executável roda sem o
+parâmetro -f e o campo \emph{d} não é preenchido em todos os
+links. A versão HTK 3.4 não traz melhoria com relação as lattices.
+As mesmas alterações feitas na versão 3.3 foram replicadas na versão 3.4, contudo não surtiram efeito.
+
+Já a última versão HTK 3.4.1 traz melhoria com relação as lattices.
+Uma delas é a flag PHNALG que permite utilizar os parâmetros -f e -n
+juntos. O código do \emph{HRec.c} foi alterado para gerar os scores
+frame-a-frame. Todos os links possuem o campo \emph{d}. Contudo, o
+último frame de alguns links apresentam erro no valor do score
+acústico, ou seja, valores muito discrepantes. Esses links são
+aqueles que não apareciam nas versões anteriores.\\
+
+
+Trabalhando com o WEKA:\\
+
+Estamos usando a base \textbf{digits16k} com 23 fones (HMMs), incluindo short-pause, com três estados cada. Totalizando 69 atributos (colunas). Já os exemplos (linhas) serão a quantidade de frames da sequência.
+
+\begin{itemize}
+\item Montar uma tabela de associação para cada estado das HMMs. Por exemplo: sil[2] = 3; ow1[3] = 9; etc.
+\end{itemize}
+
+Vamos trabalhar com os 1956 arquivos que apresentaram erro de reconhecimento e sempre com duas sequências fornecidas pela lattice: a correta e a melhor concorrente. Caso a sequência correta não esteja presente na lattice, aplicar forced-aligment. 
+
+\begin{itemize}
+ \item A ferramenta \textit{gsfl} foi implementada para gerar o grafo das lattices.
+ \item Usando a opção -n i [N] N-best recognition (using i tokens) da ferramenta \textit{HVite} com \textit{i} igual a 3 (três) obteve-se um subconjunto com 1649 arquivos que possuem a transcrição correta como uma das sequências fornecidas pela sua lattice.
+\item Na tentativa de aumentar a quantidade de arquivos, o parâmetro \textit{i} foi incrementado para 4 (quatro), porém o \textit{gsfl} não conseguiu tratar as lattices resultantes.
+\item Foi adicionada a opção -c na ferramenta \textit{gsfl}. Assim, todas as lattices que apresentaram erro de reconhecimento foram lidas buscando-se a sentença que foi reconhecida (melhor \textit{score}) e a sentença que deveria ser reconhecida (opção -c). Os arquivos resultantes foram salvos no diretório /path.
+\newline
+\newline
+\end{itemize}
+
+
+
+$M$: número total de estados. Total de 69 estados.
+
+$N$: número de frames na sequência.
+
+$A(t)$: conjunto de estados ativos no frame $t$.
+
+$b_{j}(t)$: score acústico do estado $j$ no frame $t$.\\
+
+Exemplo numérico:
+
+$A(t)$ = \{2,9,38,5\}
+
+Score acústico dos estados ativos: $b_{j}(t)$ = \{-60,-30,-120,-40\}
+
+Em seguida, normalizar fazendo o maior ser zero: $b_{j}(t)$ = \{-30,0,-90,-10\}
+
+Definir o score acústico dos estados não-ativos: $b_{j}(t)$ = min - threshold
+
+Fazendo threshold = 100, tem-se: $b_{j}(t)$ = -190
+
+Entrada no WEKA para o frame $t$: -190,-30,-190,-190,-10,...,-190,sim/não\\
+
+A última coluna é uma classe binária que informa se nesse frame o fonema/estado com maior score faz parte ou não da sequência correta.\\
+
+Problema que pode surgir com tamanho dos arquivos: usar representação esparsa. O WEKA tem essa facilidade.\\
+
+Dúvida que se pretende responder: como um classificador (SVM, clustering) se comporta nessa situação?
+
+
+\end{document}

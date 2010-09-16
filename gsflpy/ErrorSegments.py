@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt
 from ErrorSegment import ErrorSegment
+from Arff import Arff
 import util
 #TODO This is not a good name
 class ErrorSegments():
    def __init__(self,error_segments):
       self.error_segments = error_segments
+      self.arff = Arff()
 
    def most_different(self):
       index_error_segment = 0
@@ -15,16 +17,50 @@ class ErrorSegments():
 	       continue
 
 	    index_segment = 0
+	    #[:][margin][index]
+	    margins = []
 	    for segment in segments[0]:
 	       margin = segment.score - \
 		     segments[error_segment.correct_index[index_segments]]\
 			[index_segment].score
-	       print margin
+	       margins.append([margin, index_segment])
+#	       print str(margin) + ' ' + segment.state + ' ' +\
+#		     segments[error_segment.correct_index[index_segments]]\
+#			[index_segment].state
 	       index_segment += 1
+
+	    margins.sort()
+	    for margin in margins:
+	       if segments[error_segment.correct_index[index_segments]]\
+		     [margin[1]].state == segments[0][margin[1]].state:
+		  continue
+
+	       samples = dict()
+	       biggest = segments[0][margin[1]].score
+	       for segment in segments:
+		  #the segment is not the first and not the recognized?
+		  if segment != segments[0] and \
+			segment != segments[error_segment.correct_index[index_segments]]:
+		     #the phoneme was already analysed
+		     if samples.has_key(segment[margin[1]].state):
+			#if the stored score is biggest than the actual score throw away
+			if samples[segment[margin[1]].state] > segment[margin[1]].score:
+			   continue
+		  samples[segment[margin[1]].state] = segment[margin[1]].score
+		  if biggest > segment[margin[1]].score:
+		     biggest = segment[margin[1]].score
+
+	       for samples_key in samples:
+		  samples[samples_key] -= biggest
+	       samples['conf'] = 1
+
+	       self.arff.add(samples)
+	       break
 
 	 index_segments += 1
 
 	 index_error_segment += 1
+      print self.arff
 
       for error_segment in new_error_segments:
 	 if len(error_segment.correct_segments) > 50:

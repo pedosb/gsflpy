@@ -7,33 +7,22 @@ class ErrorSegments():
       self.error_segments = error_segments
 
    def most_different(self):
-      new_error_segments = []
-      scores = []
+      index_error_segment = 0
       for error_segment in self.error_segments:
-	 index_correct_segment = 0
-	 for correct_segment in error_segment.correct_segments:
-	    index_segment = 0
-	    #TODO find the smallest float and put it here
-	    small = None
-	    for segment in correct_segment:
-	       e = error_segment.recognized_segments\
-		     [index_correct_segment][index_segment].score\
-		     - segment.score
-	       if small == None:
-		  small = [index_segment, e]
-	       if e < small[1]:
-		  small = [index_segment, e]
-	       index_segment += 1
+	 index_segment = 0
+	 for segment in error_segment.segments:
+	    if index_segment == error_segment.correct_index[index_segment]:
+	       continue
 
-	    scores.insert(0, small[1])
-	    util.add_error_segment(new_error_segments,\
-		  ErrorSegment([error_segment.correct_segments\
-			[index_correct_segment][small[0]]],\
-		     [error_segment.recognized_segments\
-			[index_correct_segment][small[0]]],\
-		     int(error_segment.start_time[index_correct_segment]) + small[0],\
-		     error_segment.file_name[index_correct_segment]))
-	    index_correct_segment += 1
+	    index_segment_unit = 0
+	    for segment_unit in segment:
+	       margin = segment[0] - 
+
+	       index_segment_unit += 1
+
+	 index_segment += 1
+
+	 index_error_segment += 1
 
       for error_segment in new_error_segments:
 	 if len(error_segment.correct_segments) > 50:

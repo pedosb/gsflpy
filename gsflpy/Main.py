@@ -153,15 +153,14 @@ def write_error_segmets(error_segments):
    file_out = open(ERROR_SEGMENTS_OUT_FILE, 'w')
    for error_segment in error_segments:
       i = 0
-      for correct_segment in error_segment.correct_segments:
+      for segments in error_segment.segments:
 	 file_out.write(str(error_segment.file_name[i]))
 	 file_out.write(';')
 	 file_out.write(str(error_segment.start_time[i]))
+	 file_out.write(';')
+	 file_out.write(str(error_segment.correct_index[i]))
 	 file_out.write(';:')
-	 for segment in correct_segment:
-	    file_out.write(str(segment))
-	 file_out.write(';:')
-	 for segment in error_segment.recognized_segments[i]:
+	 for segment in segments:
 	    file_out.write(str(segment))
 	 file_out.write(';\n')
 	 i += 1

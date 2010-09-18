@@ -155,18 +155,24 @@ class ReadLattice():
     def parse_error_segment_file(self, error_segment_file):
        """
        Expected a file like this:
-       error_file_name;start_time;correct_segments:recognized_segments;
+       error_file_name;start_time;correct_index;segments;
        ...
        And return a list with all error segments found.
        """
        error_segments = []
        for self.line in open(error_segment_file):
 	  arguments = self.line.split(';')
+	  file_name = arguments[0]
+	  start_time = arguments[1]
+	  correct_index = arguments[2]
+	  segments = []
+	  for segment in arguments[3:]:
+	     segments.append(self.read_segment(segment)
 	  error_segment = \
-		ErrorSegment(self.read_segment(arguments[2]),\
-		   self.read_segment(arguments[3]),\
-		   int(arguments[1]),\
-		   arguments[0])
+		ErrorSegment(segments,\
+		   correct_index),\
+		   start_time,\
+		   file_name)
 	  util.add_error_segment(error_segments, error_segment)
        return error_segments
 

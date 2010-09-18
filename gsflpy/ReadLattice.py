@@ -59,7 +59,7 @@ class ReadLattice():
 	    if words[0] == 'I':
 		i = words[1]
 	    elif words[0] == 't':
-		t = words[1]
+		t = float(words[1])
 	    elif words[0] == 'W':
 		w = words[1]
 	    elif words[0] == 's':
@@ -67,7 +67,7 @@ class ReadLattice():
 	    elif words[0] == 'L':
 		l = words[1]
 	    elif words[0] == 'v':
-		v = words[1]
+		v = int(words[1])
 	    else:
 		raise ArgumentNotFoundError(found = words[0])
 	if i != None:
@@ -147,9 +147,9 @@ class ReadLattice():
 		    'see htkbook for arcs specifications')
 
     def parse(self, lat_file):
-       """
-       We expect a lattice file with at least the nodes and links specifications
-       """
+        """
+        We expect a lattice file with at least the nodes and links specifications
+        """
         self.line_number = 0
 	for self.line in open(lat_file):
 	    self.line_number = self.line_number + 1

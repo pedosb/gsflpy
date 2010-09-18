@@ -29,8 +29,7 @@ class Sentence():
       string = ''
       for node in self.nodes:
 	 string += ' ' + node.w
-      string += '  ' + str(self._score)
-      return string
+      return string.strip()
 
    def __cmp__(self, other):
       """

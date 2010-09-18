@@ -265,7 +265,7 @@ class Lattice:
       else:
 	 self.error_segments = []
       correct_segments = None
-      reconized_segments = None
+      recognized_segments = None
       start_time = None
       confusion_region = False
       for frame in range(len(correct_sentence.segments)):
@@ -276,18 +276,24 @@ class Lattice:
 #	       print self.sentences_ready[0].segments[frame].state
 	       confusion_region = True
 	       correct_segments = []
-	       reconized_segments = []
+	       recognized_segments = []
 	       start_time = frame
 #	    print correct_sentence.segments[frame].state
 #	    print self.sentences_ready[0].segments[frame].state
 	    correct_segments.append(correct_sentence.segments[frame])
-	    reconized_segments.append(self.sentences_ready[0].segments[frame])
+	    recognized_segments.append(self.sentences_ready[0].segments[frame])
 	 elif confusion_region:
-	    confusion_region = False
-	    self.add_error_segment(ErrorSegment(correct_segments,\
-		  reconized_segments, \
-		  start_time, \
-		  self.file_name))
+	       confusion_region = False
+#	    if len(correct_segments) == 0 or \
+#		  len(recognized_segments) == 0 or\
+#		  not start_time:
+#	       print 'WARNING: cannot understand segments of file:'
+#	       print self.file_name
+#	    else:
+	       self.add_error_segment(ErrorSegment(correct_segments,\
+		     recognized_segments, \
+		     start_time, \
+		     self.file_name))
 
       return self.error_segments
 
@@ -312,7 +318,7 @@ class Lattice:
 	 self.error_segments[error_segment_index].add(\
 	       error_segment.correct_segments[0],\
 	       error_segment.recognized_segments[0],\
-	       error_segment.start_time,\
-	       error_segment.file_name)
+	       error_segment.start_time[0],\
+	       error_segment.file_name[0])
       else:
 	 self.error_segments.insert(0, error_segment)

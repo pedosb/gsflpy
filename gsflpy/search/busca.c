@@ -6,6 +6,16 @@ typedef struct node_link{
    struct node_link *next;
 }Node_link;
 
+void del_node_link(Node_link *nl){
+   Node_link *sNl = nl,
+	     *next;
+   while (sNl != NULL){
+      next = sNl->next;
+      free(sNl);
+      sNl = next;
+   }
+}
+
 Node_link *new_node_link(long int node){
    Node_link *nl = (Node_link*) malloc(sizeof(Node_link));
    nl->node = node;
@@ -43,6 +53,17 @@ typedef struct sent_link{
    long int node_count;
    struct sent_link *next;
 }Sent_link;
+
+void del_sent_link(Sent_link *sl){
+   Sent_link *sSl = sl,
+	     *next;
+   while (sSl != NULL){
+      del_node_link(sSl->nl);
+      next = sSl->next;
+      free(sSl);
+      sSl = next;
+   }
+}
 
 Sent_link *new_sent_link(Node_link *nl, long int node){
    Sent_link *sl = (Sent_link*) malloc(sizeof(Sent_link));
@@ -159,6 +180,12 @@ search_core(long int start_node,
 	 PyList_Append(sentList, sent);
       }
    }
+
+   //printf("\n\nbefore clean\n\n");
+   //getchar();
+   del_sent_link(sl);
+   //printf("\n\ncleaned\n\n");
+   //getchar();
 
    return sentList; 
 }

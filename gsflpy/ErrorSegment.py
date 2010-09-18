@@ -8,7 +8,7 @@ class ErrorSegment():
       Create an ErrorSegment for one specific type of error, it is,
       we do not care about the time it spend in each state but
       the sequence of states, of both, correct and recognized sentence.
-      The segments list must be sorted this is the correct sentence must
+      The segments list must be sorted that is the correct sentence must
       be the first one, and correct_index the index in this list
       that corresponds to the correct sentence.
       """

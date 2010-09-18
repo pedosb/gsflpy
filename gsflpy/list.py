@@ -4,7 +4,7 @@ if __name__=="__main__":
    f = open(sys.argv[2], 'w')
    for line in open(sys.argv[1]):
       words = line.split()
-      f.write('/ubuntu/home/pedro/Downloads/digits16k/lat/' + words[0])
+      f.write('/home/02007004071/lvcsr/digits16k/lat/' + words[0])
       f.write(' ' + str(len(words)+4))
       f.write(' !NULL SENT-START')
       for word in words[1:len(words)]:

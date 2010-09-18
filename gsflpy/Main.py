@@ -65,9 +65,10 @@ if __name__ == "__main__":
 
    read = ReadLattice(VERBOSE=VERBOSE)
    lattice = read.parse(LAT_FILE)
-   sentences = lattice.search_sentences(max_words = MAX_NODE, \
-	 max_score_diff = MAX_SCORE_DIFF, \
-	 max_frame_diff = MAX_FRAME_DIFF)
+   sentences = lattice.search_sentences_c(MAX_NODE)
+#   sentences = lattice.search_sentences(max_words = MAX_NODE, \
+#	 max_score_diff = MAX_SCORE_DIFF, \
+#	 max_frame_diff = MAX_FRAME_DIFF)
    sentences.sort(Sentence.cmp_score, reverse=True)
 #   for sentence in sentences:
 #      print str(sentence)

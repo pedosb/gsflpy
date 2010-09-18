@@ -9,18 +9,20 @@ class ErrorSegments():
    def most_different(self):
       index_error_segment = 0
       for error_segment in self.error_segments:
-	 index_segment = 0
-	 for segment in error_segment.segments:
-	    if index_segment == error_segment.correct_index[index_segment]:
+	 index_segments = 0
+	 for segments in error_segment.segments:
+	    if index_segments == error_segment.correct_index[index_segments]:
 	       continue
 
-	    index_segment_unit = 0
-	    for segment_unit in segment:
-	       margin = segment[0] - 
+	    index_segment = 0
+	    for segment in segments[0]:
+	       margin = segment.score - \
+		     segments[error_segment.correct_index[index_segments]]\
+			[index_segment].score
+	       print margin
+	       index_segment += 1
 
-	       index_segment_unit += 1
-
-	 index_segment += 1
+	 index_segments += 1
 
 	 index_error_segment += 1
 

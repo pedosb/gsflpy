@@ -163,14 +163,16 @@ class ReadLattice():
        for self.line in open(error_segment_file):
 	  arguments = self.line.split(';')
 	  file_name = arguments[0]
-	  start_time = arguments[1]
-	  correct_index = arguments[2]
+	  start_time = int(arguments[1])
+	  correct_index = int(arguments[2])
 	  segments = []
 	  for segment in arguments[3:]:
-	     segments.append(self.read_segment(segment)
+	     #TODO test for empty string
+	     if segment != '\n':
+		segments.append(self.read_segment(segment))
 	  error_segment = \
 		ErrorSegment(segments,\
-		   correct_index),\
+		   correct_index,\
 		   start_time,\
 		   file_name)
 	  util.add_error_segment(error_segments, error_segment)

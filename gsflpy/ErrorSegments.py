@@ -19,6 +19,8 @@ class ErrorSegments():
 	    index_segment = 0
 	    #[:][margin][index]
 	    margins = []
+#	    print error_segment.file_name[index_segments]
+#	    print len(segments)
 	    for segment in segments[0]:
 	       margin = segment.score - \
 		     segments[error_segment.correct_index[index_segments]]\

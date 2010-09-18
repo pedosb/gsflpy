@@ -1,6 +1,7 @@
 from Sentence import Sentence
 from Link import Link
 from ErrorSegment import ErrorSegment
+import util
 
 class Lattice:
    def __init__(self, nodes, links, file_name = None, VERBOSE = None):
@@ -251,8 +252,8 @@ class Lattice:
 
       correct_sentence = self.sentences_ready[correct_sentence_index]
 
-      self.norm_segments(correct_sentence)
-      self.norm_segments(self.sentences_ready[0])
+      correct_sentence.norm_segments()
+      self.sentences_ready[0].norm_segments()
 
       if len(correct_sentence.segments) != \
 	    len(self.sentences_ready[0].segments):
@@ -283,42 +284,12 @@ class Lattice:
 	    correct_segments.append(correct_sentence.segments[frame])
 	    recognized_segments.append(self.sentences_ready[0].segments[frame])
 	 elif confusion_region:
-	       confusion_region = False
-#	    if len(correct_segments) == 0 or \
-#		  len(recognized_segments) == 0 or\
-#		  not start_time:
-#	       print 'WARNING: cannot understand segments of file:'
-#	       print self.file_name
-#	    else:
-	       self.add_error_segment(ErrorSegment(correct_segments,\
+	    confusion_region = False
+	    util.add_error_segment(self.error_segments, \
+		  ErrorSegment(correct_segments,\
 		     recognized_segments, \
 		     start_time, \
 		     self.file_name))
 
       return self.error_segments
 
-
-   def norm_segments(self, sentence):
-      sentence.segments = []
-      for link in sentence.links:
-	 if link.d:
-	    for segment in link.d:
-	       for i in range(int(segment.length*100)):
-		  sentence.segments.append(segment)
-
-   def find_error_segment(self, cmp_error_segment):
-      for error_segment in self.error_segments:
-	 if not error_segment.cmp_phoneme(cmp_error_segment):
-	    return self.error_segments.index(error_segment)
-      return None
-
-   def add_error_segment(self, error_segment):
-      error_segment_index =  self.find_error_segment(error_segment)
-      if error_segment_index != None:
-	 self.error_segments[error_segment_index].add(\
-	       error_segment.correct_segments[0],\
-	       error_segment.recognized_segments[0],\
-	       error_segment.start_time[0],\
-	       error_segment.file_name[0])
-      else:
-	 self.error_segments.insert(0, error_segment)

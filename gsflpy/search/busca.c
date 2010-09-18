@@ -17,7 +17,7 @@ Node_link *new_node_link(long int node){
  * insert the node at the end of nl
  */
 void add_node(Node_link *nl, long int node){
-   Node_link *new_nl = (Node_link*) new_node_link(node);
+   Node_link *new_nl = new_node_link(node);
    Node_link *sNl;
 
    for (sNl = nl; sNl->next != NULL; sNl = sNl->next);
@@ -31,7 +31,7 @@ void add_node(Node_link *nl, long int node){
 Node_link *copy_node_link(Node_link *nl){
    Node_link *new_nl = new_node_link(nl->node);
    Node_link *sNl;//searchNl
-   for (sNl = nl->next; sNl != NULL; sNl = sNl->next)
+   for (sNl = nl->next; sNl->next != NULL; sNl = sNl->next)
       add_node(new_nl, sNl->node);
    return new_nl;
 }
@@ -44,7 +44,7 @@ typedef struct sent_link{
    struct sent_link *next;
 }Sent_link;
 
-Sent_link *new_sent_link(Node_link *nl){
+Sent_link *new_sent_link(Node_link *nl, long int node){
    Sent_link *sl = (Sent_link*) malloc(sizeof(Sent_link));
    sl->nl = nl;
    sl->next = NULL;
@@ -54,22 +54,24 @@ Sent_link *new_sent_link(Node_link *nl){
    Node_link *sNl;
    for (sNl = nl; sNl->next != NULL; sNl = sNl->next)
       sl->node_count++;
-   sl->last_node = sNl->node;
 
+   sl->last_node = node;
    return sl;
 }
 
-Sent_link *new_clear_sent_link(){
+Sent_link *new_clear_sent_link(void){
    Sent_link *sl = (Sent_link*) malloc(sizeof(Sent_link));
    sl->nl = NULL;
    sl->next = NULL;
    sl->ready = false;
    sl->node_count = 0;
    sl->last_node = -1;
+
+   return sl;
 }
 
-Sent_link *add_sent_link(Sent_link *sl, Node_link *nl){
-   Sent_link *new_sl = new_sent_link(nl);
+Sent_link *add_sent_link(Sent_link *sl, Node_link *nl, long int node){
+   Sent_link *new_sl = new_sent_link(nl, node);
    new_sl->next = sl;
    return new_sl;
 }
@@ -83,20 +85,32 @@ void sent_link_add_node(Sent_link *sl, long int link_id, long int node){
    sl->node_count++;
 }
 
-long int search_core(long int start_node,
+PyObject *
+search_core(long int start_node,
       long int end_node,
       long int nodes_lenght,
       long int **links,
       long int MAX_NODES){
 
-   long int i, j,
-       last_node;
-   Sent_link *sl = new_clear_sent_link();
-   sl->last_node = start_node;
-   Sent_link *sSl = sl;
+   long int i, j;
+   Sent_link *sl = NULL,
+	     *sSl = NULL;
 
-   bool isPriSl;
-   i = sSl->last_node;
+   for (j = 0; j < nodes_lenght; j++)
+      if (links[start_node][j] != -1){
+	 if (sl == NULL){
+	    sl = new_sent_link(new_node_link(links[start_node][j]), j);
+	 }else{
+	    sSl = new_sent_link(new_node_link(links[start_node][j]), j);
+	    sSl->next = sl;
+	    sl = sSl;
+	 }
+      }
+
+   sSl = sl;
+
+   bool isPriSl,
+	isMody;
    
    while (sSl != NULL){
       if (sSl->ready || sSl->node_count > MAX_NODES){
@@ -105,7 +119,8 @@ long int search_core(long int start_node,
       }
 
       isPriSl = true;
-      last_node = sSl->last_node;
+      isMody = false;
+      i = sSl->last_node;
 
       for (j = 0; j < nodes_lenght; j++){
 	 if (links[i][j] != -1){
@@ -114,32 +129,33 @@ long int search_core(long int start_node,
 	       sent_link_add_node(sSl, links[i][j], j);
 	    }
 	    else{
-	       sl = add_sent_link(sl, copy_node_link(sSl->nl));
+	       isMody = true;
+	       sl = add_sent_link(sl, copy_node_link(sSl->nl), j);
 	       sent_link_add_node(sl, links[i][j], j);
 	    }
 	 }
       }
+//      printf("%d end %d\n",sSl->last_node, end_node);
       if (sSl->last_node == end_node)
 	 sSl->ready = true;
-      else
+      if (isMody)
 	 sSl = sl;
    }
+//   printf("vivo\n");
 
-   /*
    PyObject *sentList = PyList_New(0);
    PyObject *sent;
    Node_link *nl;
    for (sSl = sl; sSl != NULL; sSl = sSl->next){
       if (sSl->ready){
-	 sent = PyList_New(sSl->node_count);
-	 for (nl = sSl->nl, i = 0; nl != NULL; i++; nl = nl->next){
-	 }
-	 PyList_Insert(sentList, 0, sent);
+	 sent = PyList_New(0);
+	 for (nl = sSl->nl; nl != NULL; nl = nl->next)
+	    PyList_Append(sent, Py_BuildValue("l", nl->node));
+	 PyList_Append(sentList, sent);
       }
    }
-   */
 
-   return 1;
+   return sentList; 
 }
 
 static PyObject *
@@ -175,7 +191,6 @@ gsflc_search(PyObject *self, PyObject * args){
       links[PyInt_AsLong(PyList_GetItem(link, 0))][PyInt_AsLong(PyList_GetItem(link, 1))] = i;
    }
 
-#define _DEBUG
 #ifdef _DEBUG
    printf("Start %d\nEnd %d\nLen %d\nMax %d\n",
 	 start_node,
@@ -188,9 +203,14 @@ gsflc_search(PyObject *self, PyObject * args){
       printf("\n");
    }
 #endif
+   PyObject *sentences = search_core(start_node, end_node, nodes_lenght, links, MAX_NODES);
+   printf("vivo\n");
+   return sentences;
+}
 
-   search_core(start_node, end_node, nodes_lenght, links, MAX_NODES);
-
+static PyObject *
+gsflc_test(void){
+   long int i;
    PyObject *returnList = PyList_New(0);
    for (i = 0; i < 10; i++)
       PyList_Insert(returnList, 0, Py_BuildValue("l", i));
@@ -201,6 +221,8 @@ gsflc_search(PyObject *self, PyObject * args){
 static PyMethodDef gsflc_methods[] = {
    {"search",  gsflc_search, METH_VARARGS,
       "Searc for sentences in the graph."},
+   {"test", gsflc_test, METH_VARARGS,
+      "document"},
    {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

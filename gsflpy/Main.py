@@ -19,6 +19,7 @@ def usage():
    print '  -w: Max number of nodes per sentence.'
    print '  -s: Max score diff (for prunning).'
    print '  -c: Correct sentence.'
+   print '  -F: File to write the correct and the recognized sentences with they score.'
    print '  -o: Name of a file to store the figure (png).'
    print '  -p: sufix to be appended in the name of the latttice and write the' +\
         ' png file as output.'
@@ -144,6 +145,25 @@ def plot_error_segment(error_segments):
    plt.savefig('times')
 #   plt.show()
 
+def write_error_segmets(error_segments):
+   file_out = open(ERROR_SEGMENTS_OUT_FILE, 'w')
+   for error_segment in error_segments:
+      i = 0
+      for correct_segment in error_segment.correct_segments:
+	 file_out.write(str(error_segment.file_name[i]))
+	 file_out.write(';')
+	 file_out.write(str(error_segment.start_time[i]))
+	 file_out.write(';:')
+	 for segment in correct_segment:
+	    file_out.write(str(segment))
+	 file_out.write(';:')
+	 for segment in error_segment.recognized_segments[i]:
+	    file_out.write(str(segment))
+	 file_out.write(';\n')
+	 i += 1
+   file_out.flush()
+   file_out.close()
+
 if __name__ == "__main__":
    LAT_FILE = None
    MAX_NODE = None
@@ -152,6 +172,7 @@ if __name__ == "__main__":
    VERBOSE = None
    MAX_SCORE_DIFF = None
    MAX_FRAME_DIFF = None
+   ERROR_SEGMENTS_OUT_FILE = None
 
    if len(sys.argv) == 1:
       usage()
@@ -186,6 +207,8 @@ if __name__ == "__main__":
 	    MAX_FRAME_DIFF = float(sys.argv[count+2])
 	    MAX_SCORE_DIFF = float(sys.argv[count+1])
 	    count += 1
+	 elif sys.argv[count][1] == 'F':
+	    ERROR_SEGMENTS_OUT_FILE = str(sys.argv[count+1])
 	 else:
 	    usage()
 	 count += 2
@@ -220,9 +243,10 @@ if __name__ == "__main__":
 	       print index
 	       del lattice, read, sentences
 	 index += 1
-      plot_error_segment(error_segments)
+      #plot_error_segment(error_segments)
       for error_segment in error_segments:
 	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
+      write_error_segmets(error_segments)
    else:
       read = ReadLattice(VERBOSE=VERBOSE)
       lattice = read.parse(LAT_FILE)

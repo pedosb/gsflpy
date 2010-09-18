@@ -2,11 +2,12 @@ from Sentence import Sentence
 from Link import Link
 
 class Lattice:
-   def __init__(self, nodes, links):
+   def __init__(self, nodes, links, VERBOSE = None):
       if isinstance(nodes, dict) and \
 	    isinstance(links, dict):
          self.nodes = nodes
          self.links = links
+	 self.VERBOSE = VERBOSE
       #TODO: exception here
       else:
 	 print 'nodes and links must be a dict instance' + \
@@ -28,6 +29,8 @@ class Lattice:
        return nodes_str + '\n' + links_str
 
    def get_start_and_end_node(self):
+       if self.VERBOSE:
+	  print 'Search for start node and end node'
        #starts the nodes that is shown in links as 's' and as 'e'
        e_nodes = []
        s_nodes = []
@@ -59,11 +62,17 @@ class Lattice:
 	  for node in end_nodes:
 	     print str(node)
           exit(-1)
+	  
+       if self.VERBOSE:
+	  print 'Start node and end node FOUND'
 
        return start_nodes[0], end_nodes[0]
 
    def prunning(self):
+      if self.VERBOSE:
+	 print 'Prunning of: ' + str(len(self.sentences)) + 'sentences'
       if not self._MAX_WORDS:
+	 print 'WARNING: prunning not defined'
 	 return
       out = []
       for sentence in self.sentences:
@@ -71,6 +80,8 @@ class Lattice:
 	    out.append(sentence)
       for out_sentence in out:
 	 self.sentences.remove(out_sentence)
+      if self.VERBOSE:
+	 print 'The sentences was reduced to ' + str(len(self.sentences))
 
    def search_sentences(self, \
 	 max_words = None):

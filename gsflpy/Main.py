@@ -7,11 +7,13 @@ def usage():
 	 '-l <lattice_file> ' +\
 	 '[-w <int_number>] ' +\
 	 '[-c <string>] ' +\
-	 '[-o <figure.png>]'
+	 '[-o <figure.png>] ' +\
+	 '[-v]'
    print '  -l: File that contains the lattice.'
    print '  -w: Max number of nodes per sentence.'
    print '  -c: Correct sentence.'
    print '  -o: Name of a file to store the figure (png).'
+   print '  -v: Show more status information.'
    exit(-1)
 
 def find_correct(sentences):
@@ -28,6 +30,7 @@ if __name__ == "__main__":
    MAX_NODE = None
    CORRECT_SENTENCE = None
    OUT_FIGURE = None
+   VERBOSE = None
 
    if len(sys.argv) == 1:
       usage()
@@ -43,13 +46,15 @@ if __name__ == "__main__":
 	    CORRECT_SENTENCE = sys.argv[count+1].strip()
 	 elif sys.argv[count][1] == 'o':
 	    OUT_FIGURE = sys.argv[count+1].strip()
+	 elif sys.argv[count][1] == 'v':
+	    VERBOSE = True
 	 else:
 	    usage()
 	 count += 2
       else:
 	 usage()
 
-   read = ReadLattice()
+   read = ReadLattice(VERBOSE=VERBOSE)
    lattice = read.parse(LAT_FILE)
    sentences = lattice.search_sentences(MAX_NODE)
    sentences.sort()

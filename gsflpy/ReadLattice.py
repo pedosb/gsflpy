@@ -10,8 +10,8 @@ class ReadLattice():
     def __init__(self, VERBOSE = None):
 	self.node_number = None
 	self.link_number = None
-	self.nodes = dict()
-	self.links = dict()
+	self.nodes = []
+	self.links = []
 	self.VERBOSE = VERBOSE
 
     def split_argument_unit(self, argument_unit):
@@ -72,7 +72,7 @@ class ReadLattice():
 	    else:
 		raise ArgumentNotFoundError(found = words[0])
 	if i != None:
-	    self.nodes[i] = Node(i, t, w, s, l, v)
+	    self.nodes.append(Node(i, t, w, s, l, v))
 	else:
 	    ArgumentNotFoundError(self.line, 'I = identifier expected')
 
@@ -114,19 +114,22 @@ class ReadLattice():
 	"""
 	line_splitted = self.line.split()
 	j=s=e=a=l=r=w=v=d=None
+	nodes_i = []
+	for nodes in self.nodes:
+	   nodes_i.append(nodes.i)
 	for argument_unit in line_splitted:
 	    words = self.split_argument_unit(argument_unit)
 
 	    if words[0] == 'J':
 		j = words[1]
 	    elif words[0] == 'S':
-		if words[1] not in self.nodes:
+	        if words[1] not in nodes_i:
 		    raise KeyNotFoundError(words[1], 'nodes')
-		s = self.nodes[words[1]]
+		s = self.nodes[nodes_i.index(words[1])]
 	    elif words[0] == 'E':
-		if words[1] not in self.nodes:
+		if words[1] not in nodes_i:
 		    raise KeyNotFoundError(words[1], 'nodes')
-		e = self.nodes[words[1]]
+		e = self.nodes[nodes_i.index(words[1])]
 	    elif words[0] == 'a':
 		a = words[1]
 	    elif words[0] == 'l':
@@ -142,7 +145,7 @@ class ReadLattice():
 	    else:
 		raise ArgumentNotFoundError(self.line)
 	if j != None or s != None or e != None:
-	    self.links[j] = Link(j, s, e, w, v, d, a, l, r)
+	    self.links.append(Link(j, s, e, w, v, d, a, l, r))
 	else:
 	    ArgumentNotFoundError(self.line, 'J, S and E expected ' +\
 		    'see htkbook for arcs specifications')

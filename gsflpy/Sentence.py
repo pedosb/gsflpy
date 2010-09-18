@@ -1,4 +1,5 @@
 from Link import Link
+from Node import Node
 class Sentence():
    def __init__(self, link = None):
       self.links = []
@@ -21,6 +22,9 @@ class Sentence():
 	    self.nodes.append(link.s)
 	 self.nodes.append(link.e)
 	 self.last_node = link.e
+      elif isinstance(link, Node):
+	 self.nodes.append(link)
+	 self.last_node = link
       else:
 	 #TODO: Create an exception
 	 print 'WARNING: Trying to add something into a sentence that is not a link'

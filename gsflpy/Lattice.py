@@ -90,18 +90,19 @@ class Lattice:
        sentence = self.sentences[0]
        while True:
 	  acessed_sentence = False
+	  last_node = sentence.last_node
 	  for link in self.links.itervalues():
 	     #if there is a link that start with the last node of the sentence
-	     if sentence.last_node == link.s:
+	     if last_node == link.s:
 		#if the sentence has already make a trasition with the
 		#last_node we need to make a copy of the sentence to do
 		# a new transition
 		if acessed_sentence:
 		   new_sentence = sentence.copy()
-		   new_sentence += link
+		   new_sentence.add(link)
 		   self.sentences.append(new_sentence)
 	        else:
-		   sentence += link
+		   sentence.add(link)
 		   acessed_sentence = True
 	  if sentence.last_node == end_node:
 	     sentence.ready = True

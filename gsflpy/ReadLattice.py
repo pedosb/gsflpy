@@ -3,6 +3,8 @@ from Lattice import Lattice
 from Node import Node
 from Link import Link
 from Segment import Segment
+from ErrorSegment import ErrorSegment
+import util
 
 class ReadLattice():
     COMMENT_CHAR = '#'
@@ -149,6 +151,24 @@ class ReadLattice():
 	else:
 	    ArgumentNotFoundError(self.line, 'J, S and E expected ' +\
 		    'see htkbook for arcs specifications')
+
+    def parse_error_segment_file(self, error_segment_file):
+       """
+       Expected a file like this:
+       error_file_name;start_time;correct_segments:recognized_segments;
+       ...
+       And return a list with all error segments found.
+       """
+       error_segments = []
+       for self.line in open(error_segment_file):
+	  arguments = self.line.split(';')
+	  error_segment = \
+		ErrorSegment(self.read_segment(arguments[2]),\
+		   self.read_segment(arguments[3]),\
+		   arguments[0],\
+		   arguments[1])
+	  util.add_error_segment(error_segments, error_segment)
+       return error_segments
 
     def parse(self, lat_file):
         """

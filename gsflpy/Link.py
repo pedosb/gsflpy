@@ -11,14 +11,15 @@ class Link():
       language=%f l o General language model likelihood of link
       r=%f r o Pronunciation probability
     """
-    def __init__(self, j,\
-	    s,\
-	    e,\
-	    w = None,\
-	    v = None,\
-	    d = None,\
-	    a = None,\
-	    l = None,\
+    def __init__(self, \
+	    j, \
+	    s, \
+	    e, \
+	    w = None, \
+	    v = None, \
+	    d = None, \
+	    a = None, \
+	    l = None, \
 	    r = None):
 	self.j = j
 	self.s = s
@@ -29,3 +30,24 @@ class Link():
 	self.a = a
 	self.l = l
 	self.r = r
+
+    def __str__(self):
+       string = 'J=' + str(self.j) + ' '  +\
+	    'S=' + str(self.s.i) + ' ' + \
+	    'E=' + str(self.e.i) + ' ' 
+       if self.w:
+           string += 'w=' + str(self.w) + ' ' 
+       if self.v:
+           string += 'v=' + str(self.v) + ' ' 
+       if self.d:
+	   segment_str = ':'
+	   for segment in self.d:
+	       segment_str += str(segment)
+           string += 'd=' + str(segment_str) + ' ' 
+       if self.a:
+           string += 'a=' + str(self.a) + ' ' 
+       if self.l:
+           string += 'l=' + str(self.l) + ' ' 
+       if self.r:
+           string += 'r=' + str(self.r) + ' ' 
+       return string

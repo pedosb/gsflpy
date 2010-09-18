@@ -186,6 +186,6 @@ class ReadLattice():
 		    'FOR THIS.'
 	    exit(-1)
 
-	print self.node_number
-	print self.link_number
-	return Lattice(self.nodes, self.links, VERBOSE=self.VERBOSE)
+	print 'Read ' + str(self.node_number) + \
+	      ' nodes and ' + str(self.link_number) + ' links'
+	return Lattice(self.nodes, self.links, file_name = lat_file, VERBOSE=self.VERBOSE)

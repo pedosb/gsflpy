@@ -5,27 +5,98 @@ from Sentence import Sentence
 
 def usage():
    print 'Usage: ' + sys.argv[0] + ' ' +\
-	 '-l <lattice_file> ' +\
+	 '((-l <lattice_file> ' +\
 	 '[-w <int_number>] ' +\
 	 '[-c <string>] ' +\
-	 '[-o <figure.png>] ' +\
+	 '[-o <figure.png>]) | ' +\
+	 '-L <lattice_and_transcriptions_file_path>) ' + \
+	 '[-f <figure_sufix>] ' +\
 	 '[-v]'
    print '  -l: File that contains the lattice.'
+   print '  -L: File that contains the path for lattice file (whithout spaces)'
+   print '      and followed by the correct transcription (one per line).'
    print '  -w: Max number of nodes per sentence.'
    print '  -s: Max score diff (for prunning).'
    print '  -c: Correct sentence.'
    print '  -o: Name of a file to store the figure (png).'
+   print '  -p: sufix to be appended in the name of the latttice and write the' +\
+        ' png file as output.'
    print '  -v: Show more status information.'
    exit(-1)
 
-def find_correct(sentences):
+def find_correct(sentences, correct_sentence):
    count = 0
    for sentence in sentences:
-      if str(sentence) == CORRECT_SENTENCE:
+      if str(sentence) == correct_sentence:
 	 return sentence, count
       count += 1
 
    return None, None
+
+def plot():
+      for sentence in sentences:
+	 if sentence == correct_sentence or sentence == sentences[0]:
+	    sentence.plot = True
+	 else:
+	    sentence.plot = False
+
+      import matplotlib.pyplot as plt
+      if OUT_FIGURE:
+	 figure = plt.figure(figsize=(20,15), dpi=200)
+      else:
+	 figure = plt.figure()
+      for sentence in sentences:
+	 if sentence.plot:
+	    sentence.score_points = []
+	    sentence.states_points = []
+	    sentence.state_transition_points = []
+	    last_state = None
+	    for link in sentence.links:
+	       if link.d:
+		  for segment in link.d:
+		     for i in range(int(segment.length*100)):
+			if not last_state:
+			   last_state = segment.state
+			   count_state = 0
+			   initial_point = len(sentence.score_points)
+			   sentence.state_transition_points.append([initial_point, segment.score])
+			elif last_state == segment.state:
+			   count_state += 1
+			else:
+			   x_point = (count_state / 2) + initial_point
+			   sentence.states_points.append([last_state, \
+				 x_point, sentence.score_points[x_point]])
+			   last_state = None
+			sentence.score_points.append(segment.score)
+	    plot_setting = ''
+	    if sentence == correct_sentence:
+	       color = 'c'
+	       plot_setting += 'g'
+	    else:
+	       color = 'r'
+	       plot_setting += 'b'
+
+	    for points in sentence.state_transition_points:
+	       plt.plot(points[0], points[1], 'o' + plot_setting, ms=8)
+	    for points in sentence.states_points:
+	       plt.text(points[1], \
+		     points[2], \
+		     str(points[0]), \
+		     dict(color=color, \
+		       size='12', \
+		       weight='semibold'))
+	    plt.plot(sentence.score_points, \
+		  plot_setting, \
+		  label=str(sentence), \
+		  linewidth=1.5)
+
+      plt.ylabel('score')
+      plt.xlabel('time')
+      plt.legend()
+      if OUT_FIGURE:
+	 plt.savefig(OUT_FIGURE, orientation='landscape', format='png', papertype='a0')
+      else:
+	 plt.show()
 
 if __name__ == "__main__":
    LAT_FILE = None
@@ -44,6 +115,18 @@ if __name__ == "__main__":
       if sys.argv[count][0] == '-':
 	 if sys.argv[count][1] == 'l':
 	    LAT_FILE = sys.argv[count+1]
+	 elif sys.argv[count][1] == 'L':
+	    LAT_FILE = []
+	    MAX_NODE = []
+	    CORRECT_SENTENCE = []
+	    for line in open(sys.argv[count+1]):
+	       words = line.split()
+	       LAT_FILE.append(words[0])
+	       MAX_NODE.append(words[1])
+	       sentence = ""
+	       for word in words[2:len(words)]:
+		  sentence += word + ' '
+	       CORRECT_SENTENCE.append(sentence.strip())
 	 elif sys.argv[count][1] == 'w':
 	    MAX_NODE = int(sys.argv[count+1])
 	 elif sys.argv[count][1] == 'c':
@@ -62,83 +145,51 @@ if __name__ == "__main__":
 	 count += 2
       else:
 	 usage()
-
-   read = ReadLattice(VERBOSE=VERBOSE)
-   lattice = read.parse(LAT_FILE)
-   sentences = lattice.search_sentences_c(MAX_NODE)
-#   sentences = lattice.search_sentences(max_words = MAX_NODE, \
-#	 max_score_diff = MAX_SCORE_DIFF, \
-#	 max_frame_diff = MAX_FRAME_DIFF)
-   sentences.sort(Sentence.cmp_score, reverse=True)
-#   for sentence in sentences:
-#      print str(sentence)
-   print 'Recognized:'
-   print str(sentences[0]) + '  ' + str(sentences[0]._score)
-   if CORRECT_SENTENCE:
-      correct_sentence, number = find_correct(sentences)
-      if correct_sentence:
-	 print 'Correct was the sentence number ' + str(number + 1)
-	 print str(correct_sentence) + '  ' + \
-	       str(correct_sentence._score)
-      else:
-	 print 'WARNING: Correct sentence not found!!!'
-
-      if correct_sentence:
-	 for sentence in sentences:
-	    if sentence == correct_sentence or sentence == sentences[0]:
-	       sentence.plot = True
+   if isinstance(LAT_FILE, list):
+      print isinstance(LAT_FILE, list)
+      index = 0
+      error_segments = []
+      for lat_file in LAT_FILE:
+	 read = ReadLattice(VERBOSE=VERBOSE)
+	 lattice = read.parse(lat_file)
+	 sentences = lattice.search_sentences_c(MAX_NODE[index])
+	 if len(sentences) < 1:
+	    print 'WARNING: No sentences found'
+	 else:
+	    print 'Recognized:'
+	    print str(sentences[0]) + ' ' + str(sentences[0]._score)
+	    correct_sentence, number = find_correct(sentences, \
+		  CORRECT_SENTENCE[index])
+	    if not correct_sentence:
+	       print 'WARNING: Correct sentence not found!!!'
 	    else:
-	       sentence.plot = False
-
-	 import matplotlib.pyplot as plt
-	 if OUT_FIGURE:
-	    figure = plt.figure(figsize=(20,15), dpi=200)
+	       print 'Correct was the sentence number ' + str(number + 1) + ':'
+	       print str(correct_sentence) + '  ' + \
+		     str(correct_sentence._score)
+   #	    plot()
+	       error_segments = lattice.get_error_segments(number, error_segments) 
+	       if VERBOSE:
+		  for error_segment in error_segments:
+		     print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
+		  print index
+	       del lattice, read, sentences
+	 index += 1
+   else:
+      read = ReadLattice(VERBOSE=VERBOSE)
+      lattice = read.parse(LAT_FILE)
+      sentences = lattice.search_sentences_c(MAX_NODE)
+      print 'Recognized:'
+      print str(sentences[0]) + '  ' + str(sentences[0]._score)
+      if CORRECT_SENTENCE:
+	 correct_sentence, number = find_correct(sentences, CORRECT_SENTENCE)
+	 if not correct_sentence:
+	    print 'WARNING: Correct sentence not found!!!'
 	 else:
-	    figure = plt.figure()
-	 for sentence in sentences:
-	    if sentence.plot:
-	       sentence.score_points = []
-	       sentence.states_points = []
-	       sentence.state_transition_points = []
-	       last_state = None
-	       for link in sentence.links:
-		  if link.d:
-		     for segment in link.d:
-			for i in range(segment.length*100):
-			   if not last_state:
-			      last_state = segment.state
-			      count_state = 0
-			      initial_point = len(sentence.score_points)
-			      sentence.state_transition_points.append([initial_point, segment.score])
-			   elif last_state == segment.state:
-			      count_state += 1
-			   else:
-			      x_point = (count_state / 2) + initial_point
-			      sentence.states_points.append([last_state, x_point, sentence.score_points[x_point]])
-			      last_state = None
-			   sentence.score_points.append(segment.score)
-	       plot_setting = ''
-	       print sentence
-	       if sentence == correct_sentence:
-		  color = 'c'
-		  plot_setting += 'g'
-	       else:
-		  color = 'r'
-		  plot_setting += 'b'
+	    print 'Correct was the sentence number ' + str(number + 1) + ':'
+	    print str(correct_sentence) + '  ' + \
+		  str(correct_sentence._score)
+	    plot()
 
-	       for points in sentence.state_transition_points:
-		  plt.plot(points[0], points[1], 'o' + plot_setting, ms=8)
-	       for points in sentence.states_points:
-		  plt.text(points[1], points[2], str(points[0]), dict(color=color, size='12', weight='semibold'))
-
-	       plt.plot(sentence.score_points, plot_setting, label=str(sentence), linewidth=1.5)
-
-	       print len(sentence.state_transition_points)
-	       print len(sentence.states_points)
-	 plt.ylabel('score')
-	 plt.xlabel('time')
-	 plt.legend()
-	 if OUT_FIGURE:
-	    plt.savefig(OUT_FIGURE, orientation='landscape', format='png', papertype='a0')
-	 else:
-	    plt.show()
+	 error_segments = lattice.get_error_segments(number)
+	 for error_segment in error_segments:
+	    print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))

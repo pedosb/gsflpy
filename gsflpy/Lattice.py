@@ -1,13 +1,16 @@
 from Sentence import Sentence
 from Link import Link
+from ErrorSegment import ErrorSegment
 
 class Lattice:
-   def __init__(self, nodes, links, VERBOSE = None):
+   def __init__(self, nodes, links, file_name = None, VERBOSE = None):
       if isinstance(nodes, list) and \
 	    isinstance(links, list):
          self.nodes = nodes
          self.links = links
+	 self.sentences_ready = None
 	 self.VERBOSE = VERBOSE
+	 self.file_name = file_name
       #TODO: exception here
       else:
 	 print 'nodes and links must be a list instance' + \
@@ -162,6 +165,9 @@ class Lattice:
 	    new_sentence.add(self.links[link_index])
 	 self.sentences.insert(0, new_sentence)
 
+      self.sentences.sort(cmp=Sentence.cmp_score, reverse=True)
+
+      self.sentences_ready = self.sentences
       return self.sentences
 
    def search_sentences(self, \
@@ -235,3 +241,78 @@ class Lattice:
       print len(self.sentences_ready)
       return self.sentences_ready
 
+   def get_error_segments(self, \
+	 correct_sentence_index, \
+	 error_segments = None):
+      if not self.sentences_ready:
+	 #TODO Exception here
+	 print "We do not have the correct sentences"
+	 exit(-1)
+
+      correct_sentence = self.sentences_ready[correct_sentence_index]
+
+      self.norm_segments(correct_sentence)
+      self.norm_segments(self.sentences_ready[0])
+
+      if len(correct_sentence.segments) != \
+	    len(self.sentences_ready[0].segments):
+	 #TODO Exception here
+	 print "Error sentences to be compared must have the same number of frames."
+	 exit(-1)
+
+      if isinstance(error_segments, list):
+	 self.error_segments = error_segments
+      else:
+	 self.error_segments = []
+      correct_segments = None
+      reconized_segments = None
+      start_time = None
+      confusion_region = False
+      for frame in range(len(correct_sentence.segments)):
+	 if correct_sentence.segments[frame].score != \
+	       self.sentences_ready[0].segments[frame].score:
+	    if not confusion_region:
+#	       print correct_sentence.segments[frame].state
+#	       print self.sentences_ready[0].segments[frame].state
+	       confusion_region = True
+	       correct_segments = []
+	       reconized_segments = []
+	       start_time = frame
+#	    print correct_sentence.segments[frame].state
+#	    print self.sentences_ready[0].segments[frame].state
+	    correct_segments.append(correct_sentence.segments[frame])
+	    reconized_segments.append(self.sentences_ready[0].segments[frame])
+	 elif confusion_region:
+	    confusion_region = False
+	    self.add_error_segment(ErrorSegment(correct_segments,\
+		  reconized_segments, \
+		  start_time, \
+		  self.file_name))
+
+      return self.error_segments
+
+
+   def norm_segments(self, sentence):
+      sentence.segments = []
+      for link in sentence.links:
+	 if link.d:
+	    for segment in link.d:
+	       for i in range(int(segment.length*100)):
+		  sentence.segments.append(segment)
+
+   def find_error_segment(self, cmp_error_segment):
+      for error_segment in self.error_segments:
+	 if not error_segment.cmp_phoneme(cmp_error_segment):
+	    return self.error_segments.index(error_segment)
+      return None
+
+   def add_error_segment(self, error_segment):
+      error_segment_index =  self.find_error_segment(error_segment)
+      if error_segment_index != None:
+	 self.error_segments[error_segment_index].add(\
+	       error_segment.correct_segments[0],\
+	       error_segment.recognized_segments[0],\
+	       error_segment.start_time,\
+	       error_segment.file_name)
+      else:
+	 self.error_segments.insert(0, error_segment)

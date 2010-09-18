@@ -165,8 +165,8 @@ class ReadLattice():
 	  error_segment = \
 		ErrorSegment(self.read_segment(arguments[2]),\
 		   self.read_segment(arguments[3]),\
-		   arguments[0],\
-		   arguments[1])
+		   int(arguments[1]),\
+		   arguments[0])
 	  util.add_error_segment(error_segments, error_segment)
        return error_segments
 

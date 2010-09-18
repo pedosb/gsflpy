@@ -3,6 +3,7 @@ import sys
 from ReadLattice import ReadLattice
 from Sentence import Sentence
 from ErrorSegment import ErrorSegment
+from ErrorSegments import ErrorSegments
 
 def usage():
    print 'Usage: ' + sys.argv[0] + ' ' +\
@@ -223,8 +224,10 @@ if __name__ == "__main__":
    if ERROR_SEGMENTS_IN_FILE:
       read = ReadLattice(VERBOSE=VERBOSE)
       error_segments = read.parse_error_segment_file(ERROR_SEGMENTS_IN_FILE)
-      for error_segment in error_segments:
-	 print str(error_segment) + ' ' + str(len(error_segment.correct_segments))
+#      for error_segment in error_segments:
+#	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
+      err = ErrorSegments(error_segments)
+      err.most_different()
 
    elif isinstance(LAT_FILE, list):
       index = 0

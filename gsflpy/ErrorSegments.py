@@ -59,7 +59,7 @@ class ErrorSegments():
 	       self.arff.add(samples)
 	       break
 
-	 index_segments += 1
+	    index_segments += 1
 
 	 index_error_segment += 1
       print self.arff

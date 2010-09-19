@@ -9,6 +9,7 @@ class ErrorSegments():
       self.arff = Arff()
 
    def most_different(self):
+      new_error_segments = []
       index_error_segment = 0
       for error_segment in self.error_segments:
 	 index_segments = 0
@@ -39,7 +40,9 @@ class ErrorSegments():
 
 	       samples = dict()
 	       biggest = segments[0][margin[1]].score
+	       new_segments = []
 	       for segment in segments:
+		  new_segments.append([segment[margin[1]]])
 		  #the segment is not the first and not the recognized?
 		  if segment != segments[0] and \
 			segment != segments[error_segment.correct_index[index_segments]]:
@@ -52,17 +55,24 @@ class ErrorSegments():
 		  if biggest > segment[margin[1]].score:
 		     biggest = segment[margin[1]].score
 
+	       util.add_error_segment(new_error_segments,
+		     ErrorSegment(new_segments,
+			error_segment.correct_index[index_segments],
+			error_segment.start_time[index_segments],
+			error_segment.file_name[index_segments]))
+
 	       for samples_key in samples:
 		  samples[samples_key] -= biggest
 	       samples['conf'] = 1
 
 	       self.arff.add(samples)
 	       break
-
 	    index_segments += 1
-
 	 index_error_segment += 1
+
       print self.arff
+      for error_segment in new_error_segments:
+	 print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
 
       for error_segment in new_error_segments:
 	 if len(error_segment.correct_segments) > 50:

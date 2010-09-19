@@ -6,19 +6,21 @@ from ErrorSegment import ErrorSegment
 from ErrorSegments import ErrorSegments
 
 def usage():
-   print 'Usage: ' + sys.argv[0] + ' ' +\
-	 '(((-l <lattice_file> ' +\
-	 '[-w <int_number>] ' +\
-	 '[-c <string>] ' +\
-	 '[-o <figure.png>]) | ' +\
-	 '(-L <lattice_and_transcriptions_file_path> ' + \
-	 '[-p <figure_sufix>])) | ' +\
-	 '[-f <in_error_file>]) | ' +\
-	 '[-F <out_error_file>] ' +\
-	 '[-v]'
+   print ('Usage: ' + sys.argv[0] + ' ' +
+	 '(((-l <lattice_file> ' +
+	 '[-w <int_number>] ' +
+	 '[-c <string>] ' +
+	 '[-o <figure.png>]) | ' 
+	 '(-L <lattice_and_transcriptions_file_path> ' + 
+	 '[-p <figure_sufix>])) | ' +
+	 '[-f <in_error_file>] ' +
+	 '[-A <arff_file>]) | ' +
+	 '[-F <out_error_file>] ' +
+	 '[-v]')
    print '  -l: File that contains the lattice.'
    print '  -L: File that contains the path for lattice file (whithout spaces)'
    print '      followed by the number of max words and then correct transcription (one per line).'
+   print '  -A: Write output in an ARFF file.'
    print '  -w: Max number of nodes per sentence.'
    print '  -s: Max score diff (for prunning).'
    print '  -c: Correct sentence.'
@@ -176,6 +178,7 @@ if __name__ == "__main__":
    VERBOSE = None
    MAX_SCORE_DIFF = None
    MAX_FRAME_DIFF = None
+   ARFF_OUT_FILE = None
    ERROR_SEGMENTS_OUT_FILE = None
    ERROR_SEGMENTS_IN_FILE = None
 
@@ -214,6 +217,8 @@ if __name__ == "__main__":
 	    count += 1
 	 elif sys.argv[count][1] == 'F':
 	    ERROR_SEGMENTS_OUT_FILE = str(sys.argv[count+1])
+	 elif sys.argv[count][1] == 'A':
+	    ARFF_OUT_FILE = str(sys.argv[count+1])
 	 elif sys.argv[count][1] == 'f':
 	    ERROR_SEGMENTS_IN_FILE = str(sys.argv[count+1])
 	 else:
@@ -228,7 +233,9 @@ if __name__ == "__main__":
 #      for error_segment in error_segments:
 #	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
       err = ErrorSegments(error_segments)
-      err.most_different()
+      new_error_segments, arff = err.most_different()
+      if ARFF_OUT_FILE:
+	 arff.write(ARFF_OUT_FILE)
 
    elif isinstance(LAT_FILE, list):
       index = 0

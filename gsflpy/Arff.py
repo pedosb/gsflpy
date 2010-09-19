@@ -47,3 +47,24 @@ class Arff():
 	 str_matrix += '\n'
 
       return str_matrix
+
+   def write(self, file_name):
+      if len(self.matrix) <= 0:
+	 return ""
+
+      f = open(file_name, 'w')
+
+      f.write("@RELATION 'lattices - 15best'\n")
+      for key in self.matrix.keys():
+	 f.write('@ATTRIBUTE ' + str(key) + ' NUMERIC\n')
+
+      str_data = ""
+      f.write('@DATA\n')
+      for i in range(len(self.matrix[self.matrix.keys()[0]])):
+	 for key in self.matrix.keys():
+	    str_data += str(self.matrix[key][i]) + ','
+	 f.write(str_data[:len(str_data)-1] + '\n')
+	 str_data = ""
+
+      f.flush()
+      f.close()

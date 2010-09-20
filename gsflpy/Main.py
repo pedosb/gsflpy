@@ -224,7 +224,7 @@ if __name__ == "__main__":
    if ERROR_SEGMENTS_IN_FILE:
       read = ReadLattice(VERBOSE=VERBOSE)
       error_segments = read.parse_error_segment_file(ERROR_SEGMENTS_IN_FILE)
-      write_error_segmets(error_segments)
+#      write_error_segmets(error_segments)
 #      for error_segment in error_segments:
 #	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
       err = ErrorSegments(error_segments)

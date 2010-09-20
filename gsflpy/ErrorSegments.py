@@ -70,28 +70,9 @@ class ErrorSegments():
 	    index_segments += 1
 	 index_error_segment += 1
 
-      print self.arff
-      for error_segment in new_error_segments:
-	 print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
-
-      for error_segment in new_error_segments:
-	 if len(error_segment.correct_segments) > 50:
-	    print str(error_segment) + ' qtd ' + \
-	       str(len(error_segment.correct_segments))
-	    i = 0
-	    e = []
-	    for segment in error_segment.correct_segments:
-	       w = error_segment.recognized_segments[i][0].score -\
-		     segment[0].score
-	       if w > 0:
-		  w = -w
-	       e.insert(0, w)
-	       i += 1
-#	    e.sort()
-	    plt.figure()
-	    plt.plot(e, label=str(error_segment))
-	    plt.legend()
-	    plt.savefig(str(i) + '.png')
-      scores.sort()
-      plt.plot(scores)
-      plt.show()
+      self.arff.write('out.arff')
+#      print self.arff
+#      for error_segment in new_error_segments:
+#	 if len(error_segment.segments) > 20:
+#	    print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
+      return new_error_segments, self.arff

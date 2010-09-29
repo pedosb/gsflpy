@@ -55,6 +55,57 @@ class ErrorSegment():
 	 print 'WARNING: Error segment with a broken argument'
 	 exit(-1)
 
+   def clean(self):
+
+      import logging
+      logging.basicConfig(filename='log/clean.log',
+	    filemode='w',
+	    level=logging.INFO)
+
+      segments = []
+      correct_index = []
+      start_time = []
+      file_name = []
+
+      logging.info('Starting clean for ' +
+	    str(self) + ' with ' + str(len(self.file_name)) +
+	    ' samples.')
+
+      index = 0
+      while len(self.file_name) != 0:
+	 index_file_name = -1
+	 while True:
+	    try:
+	       index_file_name = file_name.index(
+		     self.file_name[index],
+		     index_file_name + 1,
+		     len(file_name))
+	       #Test if there already a copy of the same
+	       #start time and the length of the region.
+	       if self.start_time[index] == start_time[
+		     index_file_name]:
+		  if len(self.segments[index][0]) == len(
+			segments[index_file_name][0]):
+		     del self.segments[index]
+		     del self.correct_index[index]
+		     del self.start_time[index]
+		     del self.file_name[index]
+		     break
+	    except ValueError:
+	       segments.insert(0, self.segments.pop(index))
+	       correct_index.insert(0, self.correct_index.pop(index))
+	       start_time.insert(0, self.start_time.pop(index))
+	       file_name.insert(0, self.file_name.pop(index))
+	       break
+
+      self.segments = segments
+      self.correct_index = correct_index
+      self.start_time = start_time
+      self.file_name = file_name
+
+      logging.info('Stopped clean with '
+	    + str(len(self.file_name)) + ' samples.')
+
    def __cmp__(self, other):
       if self.correct_states == other.correct_states and \
 	    self.recognized_states == other.recognized_states:

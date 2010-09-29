@@ -251,6 +251,7 @@ if __name__ == "__main__":
 	 sentences = lattice.search_sentences_c(MAX_NODE[index])
 	 correct_sentence = None
 	 number = None
+
 	 if len(sentences) < 1:
 	    print 'WARNING: No sentences found'
 	 else:
@@ -259,22 +260,24 @@ if __name__ == "__main__":
 	    if CORRECT_SENTENCE[index] != '':
 	       correct_sentence, number = find_correct(sentences, 
 		     CORRECT_SENTENCE[index])
+
 	    if not correct_sentence:
 	       print 'WARNING: Correct sentence not found!!!'
-	       print ' -' + CORRECT_SENTENCE[index] + '- '
 	       if CORRECT_SENTENCE[index] == '':
 		  for i in range(1,15):
 		     error_segments = lattice.get_error_segments(i, error_segments)
 	    else:
 	       print 'Correct was the sentence number ' + str(number + 1) + ':'
 	       print (str(correct_sentence) + '  ' + 
-		     str(correct_sentence._score))
+		  str(correct_sentence._score))
 #	       print lat_file
 #	       plot()
 	       error_segments = lattice.get_error_segments(number, error_segments) 
 	    print index
 	    print 'size ErrorSegment ' + str(len(error_segments)) + ' ' + str(sys.getsizeof(error_segments))
 	    if index % 25 == 0:
+	       for error_segment in error_segments:
+		  error_segment.clean()
 	       write_error_segmets(error_segments)
 	       del error_segments
 	       error_segments = []
@@ -282,6 +285,7 @@ if __name__ == "__main__":
 	 index += 1
       #plot_error_segment(error_segments)
       for error_segment in error_segments:
+	 error_segment.clean()
 	 print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
       write_error_segmets(error_segments)
    else:

@@ -152,7 +152,7 @@ def plot_error_segment(error_segments):
 #   plt.show()
 
 def write_error_segmets(error_segments):
-   file_out = open(ERROR_SEGMENTS_OUT_FILE, 'w')
+   file_out = open(ERROR_SEGMENTS_OUT_FILE, 'a')
    for error_segment in error_segments:
       i = 0
       for segments in error_segment.segments:
@@ -238,33 +238,47 @@ if __name__ == "__main__":
 	 arff.write(ARFF_OUT_FILE)
 
    elif isinstance(LAT_FILE, list):
+      try:
+	 import os
+	 os.remove(ERROR_SEGMENTS_OUT_FILE)
+      except OSError:
+	 pass
       index = 0
       error_segments = []
       for lat_file in LAT_FILE:
 	 read = ReadLattice(VERBOSE=VERBOSE)
 	 lattice = read.parse(lat_file)
 	 sentences = lattice.search_sentences_c(MAX_NODE[index])
+	 correct_sentence = None
+	 number = None
 	 if len(sentences) < 1:
 	    print 'WARNING: No sentences found'
 	 else:
 	    print 'Recognized:'
 	    print str(sentences[0]) + ' ' + str(sentences[0]._score)
-	    correct_sentence, number = find_correct(sentences, \
-		  CORRECT_SENTENCE[index])
+	    if CORRECT_SENTENCE[index] != '':
+	       correct_sentence, number = find_correct(sentences, 
+		     CORRECT_SENTENCE[index])
 	    if not correct_sentence:
 	       print 'WARNING: Correct sentence not found!!!'
+	       print ' -' + CORRECT_SENTENCE[index] + '- '
+	       if CORRECT_SENTENCE[index] == '':
+		  for i in range(1,15):
+		     error_segments = lattice.get_error_segments(i, error_segments)
 	    else:
 	       print 'Correct was the sentence number ' + str(number + 1) + ':'
-	       print str(correct_sentence) + '  ' + \
-		     str(correct_sentence._score)
+	       print (str(correct_sentence) + '  ' + 
+		     str(correct_sentence._score))
 #	       print lat_file
 #	       plot()
 	       error_segments = lattice.get_error_segments(number, error_segments) 
-	       if VERBOSE:
-		  for error_segment in error_segments:
-		     print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
-	       print index
-	       del lattice, read, sentences
+	    print index
+	    print 'size ErrorSegment ' + str(len(error_segments)) + ' ' + str(sys.getsizeof(error_segments))
+	    if index % 25 == 0:
+	       write_error_segmets(error_segments)
+	       del error_segments
+	       error_segments = []
+	    del lattice, read, sentences
 	 index += 1
       #plot_error_segment(error_segments)
       for error_segment in error_segments:

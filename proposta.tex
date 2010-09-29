@@ -23,7 +23,7 @@ Proposta: An Heterogeneous and Plastic Front-end. \\
 Etapas:
 
 \begin{enumerate}
- \item Utilizar o HVite (ferramenta do HTK) para gerar lattices com score acústico frame-a-frame.
+ \item Utilizar o HVite (ferramenta do HTK) para gerar lattices com score acústico (likelihood) frame-a-frame.
  \item Confusion detection:
     \begin{itemize}
     \item Construir classificadores binários, ou seja, capazes de detectar se há ou não confusão. Esses classificadores serão treinados usando o WEKA e durante a fase de teste (quando não sabemos qual é a transcrição correta) devem identificar pontos com alta confusabilidade.
@@ -61,52 +61,68 @@ aqueles que não apareciam nas versões anteriores.\\
 
 Trabalhando com o WEKA:\\
 
-Estamos usando a base \textbf{digits16k} com 23 fones (HMMs), incluindo short-pause, com três estados cada. Totalizando 69 atributos (colunas). Já os exemplos (linhas) serão a quantidade de frames da sequência.
+Vamos trabalhar com os 1956 arquivos que apresentaram erro de reconhecimento e sempre com duas sequências 
+fornecidas pela lattice: a correta (de acordo com a transcrição) e a melhor concorrente (ou reconhecida). Caso a sequência correta não esteja presente na lattice, 
+aplicar forced-aligment. 
 
 \begin{itemize}
-\item Montar uma tabela de associação para cada estado das HMMs. Por exemplo: sil[2] = 3; ow1[3] = 9; etc.
-\end{itemize}
 
-Vamos trabalhar com os 1956 arquivos que apresentaram erro de reconhecimento e sempre com duas sequências fornecidas pela lattice: a correta e a melhor concorrente. Caso a sequência correta não esteja presente na lattice, aplicar forced-aligment. 
-
-\begin{itemize}
  \item A ferramenta \textit{gsfl} foi implementada para gerar o grafo das lattices.
- \item Usando a opção -n i [N] N-best recognition (using i tokens) da ferramenta \textit{HVite} com \textit{i} igual a 3 (três) obteve-se um subconjunto com 1649 arquivos que possuem a transcrição correta como uma das sequências fornecidas pela sua lattice.
-\item Na tentativa de aumentar a quantidade de arquivos, o parâmetro \textit{i} foi incrementado para 4 (quatro), porém o \textit{gsfl} não conseguiu tratar as lattices resultantes.
-\item Foi adicionada a opção -c na ferramenta \textit{gsfl}. Assim, todas as lattices que apresentaram erro de reconhecimento foram lidas buscando-se a sentença que foi reconhecida (melhor \textit{score}) e a sentença que deveria ser reconhecida (opção -c). Os arquivos resultantes foram salvos no diretório /path.
-\newline
+ 
+ \item Usando a opção -n i [N] N-best recognition (using textit{i} tokens) da ferramenta \textit{HVite} com \textit{i} 
+igual a 3 (três) obteve-se um subconjunto com 1649 arquivos que possuem a transcrição correta como uma das sequências 
+fornecidas pela sua lattice.
+ 
+ \item Na tentativa de aumentar a quantidade de arquivos, o parâmetro \textit{i} foi incrementado para 4 (quatro), 
+porém o \textit{gsfl} não conseguiu tratar as lattices resultantes.
+ 
+ \item Foi adicionada a opção -c na ferramenta \textit{gsfl}. Assim, todas as lattices que apresentaram erro de 
+reconhecimento foram lidas buscando-se a sentença que foi reconhecida (maior \textit{score} acumulado) e a sentença que 
+deveria ser reconhecida (opção -c). Os arquivos resultantes foram salvos no diretório /path.
 \newline
 \end{itemize}
 
 
+Nomenclatura:\\
 
-$M$: número total de estados. Total de 69 estados.
+Estamos trabalhando a base \textbf{digits16k}. Foram utilizados 22 fones, retirados do dicionário fonético do TIMIT, 
+mais o modelo de silêncio com HMM's com 3 estados utilizando a estrutura \textit{left-to-right}. 
+O modelo \textit{short-pause} com apenas um estado emissor (\textit{tee-model}) foi construído através da cópia do estado central do modelo de silêncio.
+Assim, o fone $f$ no estado $s$ será representado pelo modelo $f[s]$.\\
 
-$N$: número de frames na sequência.
+%\begin{itemize}
+%\item Montar uma tabela de associação para cada estado das HMMs. Por exemplo: sil[2] = 3; ow1[3] = 9; etc.
+%\end{itemize}
 
-$A(t)$: conjunto de estados ativos no frame $t$.
+Todo arquivo de áudio (.wav) terá seu arquivo MFCC (.mfc) correspondente. Esse arquivo é composto por um vetor $\bar{x}$ ($N$ x 39), 
+onde $N$ é o número de frames da sentença $q$. Assim, o iésimo coeficiente do vetor MFCC no frame $t$ será representado por $\bar{x}_{i}(t)$.\\
 
-$b_{j}(t)$: score acústico do estado $j$ no frame $t$.\\
+A margem $M$ é determinada pela diferença entre os scores acústicos de duas sentenças em um determinado frame. 
+Por exemplo, a equação~\ref{eq:margem} calcula a margem entre a sentença reconhecida e a correta dentro de uma lattice.
 
-Exemplo numérico:
+\begin{equation}
+\label{eq:margem}
+M(t) = b_{r}^{f[s]}(t) - b_{c}^{f[s]}(t)
+\end{equation}
+onde $b_{q}^{f[s]}(t)$ representa o score da sentença $q$ no frame $t$ com o modelo $f[s]$.
 
-$A(t)$ = \{2,9,38,5\}
 
-Score acústico dos estados ativos: $b_{j}(t)$ = \{-60,-30,-120,-40\}
 
-Em seguida, normalizar fazendo o maior ser zero: $b_{j}(t)$ = \{-30,0,-90,-10\}
 
-Definir o score acústico dos estados não-ativos: $b_{j}(t)$ = min - threshold
-
-Fazendo threshold = 100, tem-se: $b_{j}(t)$ = -190
-
-Entrada no WEKA para o frame $t$: -190,-30,-190,-190,-10,...,-190,sim/não\\
-
-A última coluna é uma classe binária que informa se nesse frame o fonema/estado com maior score faz parte ou não da sequência correta.\\
-
-Problema que pode surgir com tamanho dos arquivos: usar representação esparsa. O WEKA tem essa facilidade.\\
-
-Dúvida que se pretende responder: como um classificador (SVM, clustering) se comporta nessa situação?
+% número total de estados. Total de 69 estados.
+% $N$: número de frames na sequência.
+% $A(t)$: conjunto de estados ativos no frame $t$.
+% $b_{j}(t)$: score acústico do estado $j$ no frame $t$.\\
+% Exemplo numérico:
+% $A(t)$ = \{2,9,38,5\}
+% Score acústico dos estados ativos: $b_{j}(t)$ = \{-60,-30,-120,-40\}
+% Em seguida, normalizar fazendo o maior ser zero: $b_{j}(t)$ = \{-30,0,-90,-10\}
+% Definir o score acústico dos estados não-ativos: $b_{j}(t)$ = min - threshold
+% Fazendo threshold = 100, tem-se: $b_{j}(t)$ = -190
+% Entrada no WEKA para o frame $t$: -190,-30,-190,-190,-10,...,-190,sim/não\\
+% A última coluna é uma classe binária que informa se nesse frame o fonema/estado com maior score faz parte ou não da sequência correta.\\
+% Problema que pode surgir com tamanho dos arquivos: usar representação esparsa. O WEKA tem essa facilidade.\\
+% Dúvida que se pretende responder: como um classificador (SVM, clustering) se comporta nessa situação?
 
 
 \end{document}

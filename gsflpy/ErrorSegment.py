@@ -17,14 +17,14 @@ class ErrorSegment():
       self.start_time = []
       self.file_name = []
 
-      self.add(segments, \
-	       correct_index, \
-	       start_time, \
+      self.add(segments, 
+	       correct_index, 
+	       start_time, 
 	       file_name)
 
-      self.recognized_states = self.set_state_string(\
+      self.recognized_states = self.set_state_string(
 	    self.segments[0][0])
-      self.correct_states = self.set_state_string(\
+      self.correct_states = self.set_state_string(
 	    self.segments[0][self.correct_index[0]])
 
    def set_state_string(self, segments):
@@ -37,15 +37,15 @@ class ErrorSegment():
 	    state_string += str(segment.state)
       return state_string
 
-   def add(self, \
-	 segments, \
-	 correct_index, \
-	 start_time, \
+   def add(self, 
+	 segments, 
+	 correct_index, 
+	 start_time, 
 	 file_name):
-      if segments and \
-	    correct_index != None and \
-	    start_time != None and \
-	    (file_name or file_name == ""):
+      if (segments and 
+	    correct_index != None and 
+	    start_time != None and 
+	    (file_name or file_name == "")):
 	 self.segments.append(segments)
 	 self.correct_index.append(correct_index)
 	 self.start_time.append(start_time)

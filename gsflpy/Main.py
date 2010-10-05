@@ -261,10 +261,11 @@ if __name__ == "__main__":
 	       correct_sentence, number = find_correct(sentences, 
 		     CORRECT_SENTENCE[index])
 
+	    print 'sentences ' + str(len(sentences))
 	    if not correct_sentence:
 	       print 'WARNING: Correct sentence not found!!!'
 	       if CORRECT_SENTENCE[index] == '':
-		  for i in range(1,15):
+		  for i in range(1,len(sentences)):
 		     error_segments = lattice.get_error_segments(i, error_segments)
 	    else:
 	       print 'Correct was the sentence number ' + str(number + 1) + ':'

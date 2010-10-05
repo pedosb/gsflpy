@@ -52,7 +52,7 @@ class ErrorSegments():
 			if samples[segment[margin[1]].state] > segment[margin[1]].score:
 			   continue
 		  samples[segment[margin[1]].state] = segment[margin[1]].score
-		  if biggest > segment[margin[1]].score:
+		  if biggest < segment[margin[1]].score:
 		     biggest = segment[margin[1]].score
 
 	       util.add_error_segment(new_error_segments,

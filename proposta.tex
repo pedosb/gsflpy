@@ -28,15 +28,23 @@ Etapas:
  \item Utilizar o HVite (ferramenta do HTK) para gerar lattices com score acústico (likelihood) frame-a-frame.
  \item Confusion detection:
     \begin{itemize}
-    \item Construir classificadores binários, ou seja, capazes de detectar se há ou não confusão. Esses classificadores serão treinados usando o WEKA e durante a fase de teste (quando não sabemos qual é a transcrição correta) devem identificar pontos com alta confusabilidade.
-    \item Construir classificadores de confusão capazes de definir e identificar $S$ situações de confusabilidade. Por exemplo, visualizar grande concorrência entre um determinado número de fones. \\
-    Seria possível encaixar essa observação em alguma característica linguística: consoantes fricativas, vozeadas?
+    
+       \item Construir classificadores binários, ou seja, capazes de detectar se há ou não confusão. 
+             Esses classificadores serão treinados usando o WEKA e durante a fase de teste (quando não sabemos 
+             qual é a transcrição correta) devem identificar pontos com alta confusabilidade.
+   
+       \item Construir classificadores de confusão capazes de definir e identificar $S$ situações de confusabilidade. 
+             Por exemplo, visualizar grande concorrência entre um determinado número de fones. \\
+             Seria possível encaixar essa observação em alguma característica linguística: consoantes fricativas, vozeadas?
+
     \end{itemize}
  \item Score detection:
     \begin{itemize}
-    \item Construir classificadores de correcção (feature selection) para encontrar as features de entrada (MFCC, PLP, etc.) para treinar $S$ classificadores. Daí que vem a ideia de heterogeneidade.\\ Mas não ficou claro como treinar esses classificadores:\\
-    Como associar confusão entre fones à uma determinada feature?\\
-    Como encontrar a melhor feature para um dado classificador $S$?
+       \item  Construir classificadores de correcção (feature selection) para encontrar as features de entrada 
+              (MFCC, PLP, etc.) para treinar $S$ classificadores. Daí que vem a ideia de heterogeneidade.\\ 
+              Mas não ficou claro como treinar esses classificadores:\\
+              Como associar confusão entre fones à uma determinada feature?\\
+              Como encontrar a melhor feature para um dado classificador $S$?
     \end{itemize}
 \end{enumerate}
 

@@ -23,9 +23,9 @@ class ErrorSegments():
 #	    print error_segment.file_name[index_segments]
 #	    print len(segments)
 	    for segment in segments[0]:
-	       margin = segment.score - \
-		     segments[error_segment.correct_index[index_segments]]\
-			[index_segment].score
+	       margin = (segments[error_segment.correct_index[index_segments]]
+			   [index_segment].score
+			- segment.score)
 	       margins.append([margin, index_segment])
 #	       print str(margin) + ' ' + segment.state + ' ' +\
 #		     segments[error_segment.correct_index[index_segments]]\
@@ -52,13 +52,13 @@ class ErrorSegments():
 			if samples[segment[margin[1]].state] > segment[margin[1]].score:
 			   continue
 		  samples[segment[margin[1]].state] = segment[margin[1]].score
-		  if biggest > segment[margin[1]].score:
+		  if biggest < segment[margin[1]].score:
 		     biggest = segment[margin[1]].score
 
 	       util.add_error_segment(new_error_segments,
 		     ErrorSegment(new_segments,
 			error_segment.correct_index[index_segments],
-			error_segment.start_time[index_segments],
+			error_segment.start_time[index_segments]+margin[1],
 			error_segment.file_name[index_segments]))
 
 	       for samples_key in samples:

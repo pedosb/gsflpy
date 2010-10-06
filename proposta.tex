@@ -34,7 +34,7 @@ Etapas:
     \end{itemize}
  \item Score detection:
     \begin{itemize}
-    \item Construir classificadores de correção (feature selection) para encontrar as features de entrada (MFCC, PLP, etc.) para treinar $S$ classificadores. Daí que vem a ideia de heterogeneidade.\\ Mas não ficou claro como treinar esses classificadores:\\
+    \item Construir classificadores de correcção (feature selection) para encontrar as features de entrada (MFCC, PLP, etc.) para treinar $S$ classificadores. Daí que vem a ideia de heterogeneidade.\\ Mas não ficou claro como treinar esses classificadores:\\
     Como associar confusão entre fones à uma determinada feature?\\
     Como encontrar a melhor feature para um dado classificador $S$?
     \end{itemize}
@@ -43,8 +43,8 @@ Etapas:
 
 Nomenclatura:\\
 
-Estamos trabalhando a base \textbf{digits16k}. Foram utilizados 22 fones, retirados do dicionário fonético do TIMIT, 
-mais o modelo de silêncio com HMM's com 3 estados utilizando a estrutura \textit{left-to-right}. 
+Estamos trabalhando a base \textbf{digits16k}. Foram utilizados 22 fones, retirados do dicionário fonético do TIMIT,
+mais o modelo de silêncio com HMM's com 3 estados utilizando a estrutura \textit{left-to-right}.
 O modelo \textit{short-pause} com apenas um estado emissor (\textit{tee-model}) foi construído através da cópia do estado central do modelo de silêncio.
 Assim, o fone $f$ no estado $s$ será representado pelo modelo $f_{s}$. No total serão 67 modelos.\\
 
@@ -52,10 +52,10 @@ Assim, o fone $f$ no estado $s$ será representado pelo modelo $f_{s}$. No total 
 %\item Montar uma tabela de associação para cada estado das HMMs. Por exemplo: sil[2] = 3; ow1[3] = 9; etc.
 %\end{itemize}
 
-Todo arquivo de áudio (.wav) terá seu arquivo MFCC (.mfc) correspondente. Esse arquivo é composto por um vetor $\bar{x}$ ($N$ x 39), 
+Todo arquivo de áudio (.wav) terá seu arquivo MFCC (.mfc) correspondente. Esse arquivo é composto por um vetor $\bar{x}$ ($N$ x 39),
 onde $N$ é o número de frames da sentença. Assim, o iésimo coeficiente do vetor MFCC no frame $t$ será representado por $\bar{x}_{i}(t)$.\\
 
-A margem $M$ é determinada pela diferença entre os scores acústicos de duas sentenças da lattice em um determinado frame. 
+A margem $M$ é determinada pela diferença entre os scores acústicos de duas sentenças da lattice em um determinado frame.
 Por exemplo, a equação~\ref{eq:margem} calcula a margem entre a sentença reconhecida (melhor concorrente) e outra sentença concorrente dentro de uma lattice.
 
 \begin{equation}
@@ -86,23 +86,25 @@ aqueles que não apareciam nas versões anteriores.\\
 
 Trabalhando com o WEKA:\\
 
-Vamos trabalhar com os 1.956 arquivos que apresentaram erro de reconhecimento e sempre com duas sequências 
-fornecidas pela sua lattice: a correta (de acordo com a transcrição) e a melhor concorrente (ou reconhecida). 
-Caso a sequência correta não esteja presente na lattice, aplicar forced-aligment. 
+Vamos trabalhar com os 1.956 arquivos que apresentaram erro de
+reconhecimento e sempre com duas sequências fornecidas pela sua
+lattice: a correta (de acordo com a transcrição) e a melhor
+concorrente (ou reconhecida). Caso a sequência correta não esteja
+presente na lattice, aplicar forced-alignment.
 
 \begin{itemize}
 
  \item A ferramenta \textit{gsfl} foi implementada para gerar o grafo das lattices.
- 
- \item Usando a opção -n i [N] N-best recognition (using textit{i} tokens) da ferramenta \textit{HVite} com \textit{i} 
-igual a 3 (três) obteve-se um subconjunto com 1.649 arquivos que possuem a transcrição correta como uma das sequências 
+
+ \item Usando a opção -n i [N] N-best recognition (using textit{i} tokens) da ferramenta \textit{HVite} com \textit{i}
+igual a 3 (três) obteve-se um subconjunto com 1.649 arquivos que possuem a transcrição correta como uma das sequências
 fornecidas pela sua lattice.
- 
- \item Na tentativa de aumentar a quantidade de arquivos, o parâmetro \textit{i} foi incrementado para 4 (quatro), 
+
+ \item Na tentativa de aumentar a quantidade de arquivos, o parâmetro \textit{i} foi incrementado para 4 (quatro),
 porém o \textit{gsfl} não conseguiu tratar as lattices resultantes.
- 
- \item Foi adicionada a opção -c na ferramenta \textit{gsfl}. Assim, todas as lattices que apresentaram erro de 
-reconhecimento foram lidas buscando-se a sentença que foi reconhecida (maior score acústico acumulado) e a sentença que 
+
+ \item Foi adicionada a opção -c na ferramenta \textit{gsfl}. Assim, todas as lattices que apresentaram erro de
+reconhecimento foram lidas buscando-se a sentença que foi reconhecida (maior score acústico acumulado) e a sentença que
 deveria ter sido reconhecida (opção -c). Os arquivos resultantes foram salvos no diretório /path.
 \newline
 \end{itemize}
@@ -112,35 +114,37 @@ Arquivo Arff:\\
 
 Serão coletadas duas bases de dados. A primeira base de dados foi construída com os 1.649 arquivos que apresentaram erro de reconhecimento.
 Por escolha, as 15 (quinze) melhores concorrentes foram selecionadas dentro de cada lattice, porém apenas
-duas sentenças foram consideradas para determinar as regiões de confusão: a de maior score acústico acumulado (sentença reconhecida) 
+duas sentenças foram consideradas para determinar as regiões de confusão: a de maior score acústico acumulado (sentença reconhecida)
 e a que deveria ter sido reconhecida (sentença correta).
 
 A intenção é buscar regiões de confusão, ou seja, intervalos de tempo onde as duas sentenças divergem com relação ao score acústico.
 Para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem positiva dentro de cada região de confusão será considerado.
 
-Exemplo numérico: Cada linha da matriz $H$ abaixo representa uma das sentenças concorretes com o seu respectivo score acústico frame-a-frame.
-Para exemplificar, apenas a primeira e segunda linhas serão representadas.
-A primeira linha da matriz $H$ é composta pelo score acústico (likelihood) frame-a-frame da sentença reconhecida. 
+Exemplo numérico: Cada linha da matriz $H$ abaixo representa uma das
+sentenças concorrentes com o seu respectivo score acústico
+frame-a-frame. Para exemplificar, apenas a primeira e segunda linhas
+serão representadas. A primeira linha da matriz $H$ é composta pelo
+score acústico (likelihood) frame-a-frame da sentença reconhecida.
 A segunda linha é composta pelo score acústico frame-a-frame da sentença correta.\\
 
 $H = \begin{bmatrix} -80&-80&-100&-120&-90&-80&-80&-50&-60&-100
-                  \\ -80&-80&-120&-70&-130&-80&-80&-70&-90&-100 
+                  \\ -80&-80&-120&-70&-130&-80&-80&-70&-90&-100
                   \\  ...&...&...&...&...&...&...&...&...&... \end{bmatrix}$\\
 
 A matriz $H$ é então normalizada em função do maior score acústico no frame:\\
 
 $\bar{H} = \begin{bmatrix} 0& 0& 0&   -50& 0&  0& 0& 0&   0& 0
-                        \\ 0& 0& -20&  0& -40& 0& 0& -20& -30& 0 
+                        \\ 0& 0& -20&  0& -40& 0& 0& -20& -30& 0
                   \\  ...&...&...&...&...&...&...&...&...&...  \end{bmatrix}$\\
 
 Foram identificadas duas regiões de confusão na matriz $\bar{H}$. A primeira entre os frames 3-5 e a segunda entre os frames 8-9.
-Assim, a matriz $\bar{H}$ contribui com dois exemplos para o arquivo Arff: os frames 5 e 9, maior margem positiva 
+Assim, a matriz $\bar{H}$ contribui com dois exemplos para o arquivo Arff: os frames 5 e 9, maior margem positiva
 da primeira e segunda região de confusão, respectivamente.
 
 Já a segunda base de dados foi construída com arquivos que foram corretamente reconhecidos.
-Por escolha, as 15 (quinze) melhores concorrentes foram selecionadas dentro de cada lattice. 
-A sentença de maior score acústico acumulado (sentença correta e reconhecida) foi comparada com as demais 14 concorrentes, individualmente,  
-para determinação das regiões de confusão. Novamente, para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem 
+Por escolha, as 15 (quinze) melhores concorrentes foram selecionadas dentro de cada lattice.
+A sentença de maior score acústico acumulado (sentença correta e reconhecida) foi comparada com as demais 14 concorrentes, individualmente,
+para determinação das regiões de confusão. Novamente, para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem
 positiva dentro de cada região de confusão será considerado.\\
 
 Considerações sobre a construção do arquivo Arff:
@@ -152,10 +156,10 @@ Nesse caso será escolhido o ponto consecutivo dentro da região de confusão que p
 
  \item Os atributos (features) serão os 67 modelos mais uma classe binária que identifica se há ou não confusão naquela frame.
 Lembrando que é conhecido o modelo (HMM's) onde cada uma das quinze sentenças se encontra frame-a-frame.
- 
+
  \item Caso o mesmo modelo apareça em duas os mais sentenças, será escolhido o de maior score acústico.
 
- \item Uma região de confusão não pode se repetir. Esse fato acontence muito na segunda base de dados, onde duas concorrentes, quando
+ \item Uma região de confusão não pode se repetir. Esse fato acontece muito na segunda base de dados, onde duas concorrentes, quando
 comparadas com a sentença correta, apresentam a mesma região de confusão. Entende-se pela mesma região de confusão ...
 
 \end{itemize}

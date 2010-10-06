@@ -48,15 +48,11 @@ mais o modelo de silêncio com HMM's com 3 estados utilizando a estrutura \textit
 O modelo \textit{short-pause} com apenas um estado emissor (\textit{tee-model}) foi construído através da cópia do estado central do modelo de silêncio.
 Assim, o fone $f$ no estado $s$ será representado pelo modelo $f_{s}$. No total serão 67 modelos.\\
 
-%\begin{itemize}
-%\item Montar uma tabela de associação para cada estado das HMMs. Por exemplo: sil[2] = 3; ow1[3] = 9; etc.
-%\end{itemize}
-
 Todo arquivo de áudio (.wav) terá seu arquivo MFCC (.mfc) correspondente. Esse arquivo é composto por um vetor $\bar{x}$ ($N$ x 39),
 onde $N$ é o número de frames da sentença. Assim, o iésimo coeficiente do vetor MFCC no frame $t$ será representado por $\bar{x}_{i}(t)$.\\
 
 A margem $M$ é determinada pela diferença entre os scores acústicos de duas sentenças da lattice em um determinado frame.
-Por exemplo, a equação~\ref{eq:margem} calcula a margem entre a sentença reconhecida (melhor concorrente) e outra sentença concorrente dentro de uma lattice.
+Por exemplo, a Equação~\ref{eq:margem} calcula a margem entre a sentença reconhecida (melhor concorrente) e outra sentença concorrente dentro de uma lattice.
 
 \begin{equation}
 \label{eq:margem}
@@ -118,9 +114,9 @@ duas sentenças foram consideradas para determinar as regiões de confusão: a de m
 e a que deveria ter sido reconhecida (sentença correta).
 
 A intenção é buscar regiões de confusão, ou seja, intervalos de tempo onde as duas sentenças divergem com relação ao score acústico.
-Para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem positiva dentro de cada região de confusão será considerado.
+Para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem positiva (Equação~\ref{eq:margem}) dentro de cada região de confusão será considerado.
 
-Exemplo numérico: Cada linha da matriz $H$ abaixo representa uma das
+Exemplo numérico: Cada linha da matriz $H$ (15 x $N$) abaixo representa uma das
 sentenças concorrentes com o seu respectivo score acústico
 frame-a-frame. Para exemplificar, apenas a primeira e segunda linhas
 serão representadas. A primeira linha da matriz $H$ é composta pelo
@@ -131,39 +127,127 @@ $H = \begin{bmatrix} -80&-80&-100&-120&-90&-80&-80&-50&-60&-100
                   \\ -80&-80&-120&-70&-130&-80&-80&-70&-90&-100
                   \\  ...&...&...&...&...&...&...&...&...&... \end{bmatrix}$\\
 
-A matriz $H$ é então normalizada em função do maior score acústico no frame:\\
+Em seguida, a matriz $H$ é normalizada em função do maior score acústico em cada frame:\\
 
 $\bar{H} = \begin{bmatrix} 0& 0& 0&   -50& 0&  0& 0& 0&   0& 0
                         \\ 0& 0& -20&  0& -40& 0& 0& -20& -30& 0
                   \\  ...&...&...&...&...&...&...&...&...&...  \end{bmatrix}$\\
 
 Foram identificadas duas regiões de confusão na matriz $\bar{H}$. A primeira entre os frames 3-5 e a segunda entre os frames 8-9.
-Assim, a matriz $\bar{H}$ contribui com dois exemplos para o arquivo Arff: os frames 5 e 9, maior margem positiva
-da primeira e segunda região de confusão, respectivamente.
+Assim, a matriz $\bar{H}$ contribui com dois exemplos para o arquivo Arff: os frames 5 e 9, onde ocorre a maior margem positiva
+da primeira e da segunda região de confusão, respectivamente.
 
 Já a segunda base de dados foi construída com arquivos que foram corretamente reconhecidos.
 Por escolha, as 15 (quinze) melhores concorrentes foram selecionadas dentro de cada lattice.
 A sentença de maior score acústico acumulado (sentença correta e reconhecida) foi comparada com as demais 14 concorrentes, individualmente,
 para determinação das regiões de confusão. Novamente, para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem
-positiva dentro de cada região de confusão será considerado.\\
+positiva dentro de cada região de confusão identificada será considerado.\\
 
 Considerações sobre a construção do arquivo Arff:
 
 \begin{itemize}
 
- \item O ponto de maior margem não pode ter o mesmo modelo nas duas sentenças analisadas.
+ \item O ponto de maior margem não pode corresponder ao mesmo modelo nas duas sentenças analisadas.
 Nesse caso será escolhido o ponto consecutivo dentro da região de confusão que possua modelos diferentes, seguindo a ordem decrescente da margem.
 
- \item Os atributos (features) serão os 67 modelos mais uma classe binária que identifica se há ou não confusão naquela frame.
-Lembrando que é conhecido o modelo (HMM's) onde cada uma das quinze sentenças se encontra frame-a-frame.
+ \item Os atributos (features) serão os 67 modelos mais uma classe binária que identifica se há ou não confusão naquele frame.
+Lembrando que é conhecido o modelo (HMM) onde cada uma das 15 (quinze) sentenças se encontra frame-a-frame.
 
  \item Caso o mesmo modelo apareça em duas os mais sentenças, será escolhido o de maior score acústico.
 
- \item Uma região de confusão não pode se repetir. Esse fato acontece muito na segunda base de dados, onde duas concorrentes, quando
-comparadas com a sentença correta, apresentam a mesma região de confusão. Entende-se pela mesma região de confusão ...
+ \item Quando um dos modelos, que são os atributos do arquivo Arff, não é encontrado em nenhuma das 15 (quinze) sentenças analisadas, 
+seu valor é preenchido com 1 (um).
+
+ \item Uma região de confusão não pode se repetir dentro da mesma lattice. Esse fato acontece muito na segunda base de dados, onde duas concorrentes, quando
+comparadas com a sentença correta, apresentam a mesma região de confusão. Entende-se por regiões de confusão iguais aquelas que estão situadas 
+no mesmo intervalo de tempo, ou seja, iniciam no mesmo frame e possuem o mesmo tamanho.
 
 \end{itemize}
 
+Abaixo segue o conteúdo de um arquivo Arff:
+
+\begin{verbatim}
+@attribute iy1[3] numeric
+@attribute w[2] numeric
+@attribute uw1[3] numeric
+@attribute v[4] numeric
+@attribute s[2] numeric
+@attribute ao1[3] numeric
+@attribute ow2[3] numeric
+@attribute ey1[4] numeric
+@attribute s[4] numeric
+@attribute v[2] numeric
+@attribute k[3] numeric
+@attribute n[3] numeric
+@attribute ay1[3] numeric
+@attribute eh1[3] numeric
+@attribute k[2] numeric
+@attribute ax[2] numeric
+@attribute z[3] numeric
+@attribute r[3] numeric
+@attribute sil[2] numeric
+@attribute eh1[4] numeric
+@attribute ow1[4] numeric
+@attribute th[3] numeric
+@attribute ey1[2] numeric
+@attribute t[2] numeric
+@attribute eh1[2] numeric
+@attribute sp[2] numeric
+@attribute sil[4] numeric
+@attribute w[4] numeric
+@attribute ey1[3] numeric
+@attribute ih1[3] numeric
+@attribute t[4] numeric
+@attribute ow1[2] numeric
+@attribute ao1[2] numeric
+@attribute f[2] numeric
+@attribute iy1[2] numeric
+@attribute ah1[4] numeric
+@attribute s[3] numeric
+@attribute uw1[4] numeric
+@attribute ay1[4] numeric
+@attribute n[4] numeric
+@attribute uw1[2] numeric
+@attribute ah1[3] numeric
+@attribute ow2[2] numeric
+@attribute v[3] numeric
+@attribute ao1[4] numeric
+@attribute z[4] numeric
+@attribute n[2] numeric
+@attribute ay1[2] numeric
+@attribute w[3] numeric
+@attribute z[2] numeric
+@attribute ax[3] numeric
+@attribute r[4] numeric
+@attribute ow2[4] numeric
+@attribute r[2] numeric
+@attribute ax[4] numeric
+@attribute ih1[2] numeric
+@attribute t[3] numeric
+@attribute ih1[4] numeric
+@attribute th[2] numeric
+@attribute sil[3] numeric
+@attribute ah1[2] numeric
+@attribute iy1[4] numeric
+@attribute f[3] numeric
+@attribute f[4] numeric
+@attribute k[4] numeric
+@attribute ow1[3] numeric
+@attribute th[4] numeric
+@attribute conf {0,1}
+
+@data
+1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,-12.94,1,1,1,1,1,...,0
+1,1,1,1,1,1,1,1,1,1,1,1,1,-3.61,1,1,1,1,1,1,-2.41,1,1,1,1,0,1,...,1
+1,1,1,-21.2,1,1,1,1,0,1,1,1,1,1,1,1,1,-3.47,-16.97,1,1,1,1,1,1,...,0
+1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,-17.93,1,1,1,1,1,1,-24.13,1,...,1
+1,1,-136.94,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,-8.01,1,1,1,1,,1,...,0
+1,0,1,1,1,1,1,1,1,1,1,1,-4.43,1,1,1,1,1,1,1,1,-33.93,-3.97,1,1,...,0
+1,1,1,1,1,1,-33.16,1,1,0,1,1,1,1,1,1,-16.53,1,1,1,1,1,1,1,1,1,1,...,1
+1,1,0,1,1,1,1,1,1,1,-14.13,1,1,1,1,1,1,1,-11.78,1,1,1,1,1,1,1,1,...,1
+
+\end{verbatim}
+ 
 
 
 % número total de estados. Total de 69 estados.

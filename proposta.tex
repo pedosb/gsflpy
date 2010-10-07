@@ -122,7 +122,8 @@ duas sentenças foram consideradas para determinar as regiões de confusão: a de m
 e a que deveria ter sido reconhecida (sentença correta).
 
 A intenção é buscar regiões de confusão, ou seja, intervalos de tempo onde as duas sentenças divergem com relação ao score acústico.
-Para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem positiva (Equação~\ref{eq:margem}) dentro de cada região de confusão será considerado.
+Para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem positiva (Equação~\ref{eq:margem}) dentro 
+de cada região de confusão será considerado.
 
 Exemplo numérico: Cada linha da matriz $H$ (15 x $N$) abaixo representa uma das
 sentenças concorrentes com o seu respectivo score acústico
@@ -145,7 +146,7 @@ Foram identificadas duas regiões de confusão na matriz $\bar{H}$. A primeira ent
 Assim, a matriz $\bar{H}$ contribui com dois exemplos para o arquivo Arff: os frames 5 e 9, onde ocorre a maior margem positiva
 da primeira e da segunda região de confusão, respectivamente.
 
-Já a segunda base de dados foi construída com arquivos que foram corretamente reconhecidos.
+Já a segunda base de dados foi construída com os 10.591 arquivos que foram corretamente reconhecidos.
 Por escolha, as 15 (quinze) melhores concorrentes foram selecionadas dentro de cada lattice.
 A sentença de maior score acústico acumulado (sentença correta e reconhecida) foi comparada com as demais 14 concorrentes, individualmente,
 para determinação das regiões de confusão. Novamente, para compor o arquivo Arff apenas o ponto (frame) que apresentar a maior margem
@@ -166,8 +167,8 @@ que apresentou erro de reconhecimento. Lembrando que é conhecido o modelo (HMM) 
  \item Quando um dos modelos, que são os atributos do arquivo Arff, não é encontrado em nenhuma das 15 (quinze) sentenças analisadas, 
 seu valor é preenchido com 1 (um).
 
- \item Uma região de confusão não pode se repetir dentro da mesma lattice. Esse fato acontece muito na segunda base de dados, onde duas concorrentes, quando
-comparadas com a sentença correta, apresentam a mesma região de confusão. Entende-se por regiões de confusão iguais aquelas que estão situadas 
+ \item Uma região de confusão não pode se repetir dentro da mesma lattice. Esse fato acontece muito na segunda base de dados, onde duas ou mais concorrentes, 
+quando comparadas com a sentença correta, apresentam a mesma região de confusão. Entende-se por regiões de confusão iguais aquelas que estão situadas 
 no mesmo intervalo de tempo, ou seja, iniciam no mesmo frame e possuem o mesmo tamanho.
 
 \end{itemize}
@@ -242,17 +243,17 @@ Abaixo segue o conteúdo de um arquivo Arff:
 @attribute k[4] numeric
 @attribute ow1[3] numeric
 @attribute th[4] numeric
-@attribute conf {0,1}
+@attribute conf {sim,nao}
 
 @data
-1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,-12.94,1,1,1,1,1,...,0
-1,1,1,1,1,1,1,1,1,1,1,1,1,-3.61,1,1,1,1,1,1,-2.41,1,1,1,1,0,1,...,1
-1,1,1,-21.2,1,1,1,1,0,1,1,1,1,1,1,1,1,-3.47,-16.97,1,1,1,1,1,1,...,0
-1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,-17.93,1,1,1,1,1,1,-24.13,1,...,1
-1,1,-136.94,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,-8.01,1,1,1,1,,1,...,0
-1,0,1,1,1,1,1,1,1,1,1,1,-4.43,1,1,1,1,1,1,1,1,-33.93,-3.97,1,1,...,0
-1,1,1,1,1,1,-33.16,1,1,0,1,1,1,1,1,1,-16.53,1,1,1,1,1,1,1,1,1,1,...,1
-1,1,0,1,1,1,1,1,1,1,-14.13,1,1,1,1,1,1,1,-11.78,1,1,1,1,1,1,1,1,...,1
+1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,-12.94,1,1,1,1,1,...,sim
+1,1,1,1,1,1,1,1,1,1,1,1,1,-3.61,1,1,1,1,1,1,-2.41,1,1,1,1,0,1,...,nao
+1,1,1,-21.2,1,1,1,1,0,1,1,1,1,1,1,1,1,-3.47,-16.97,1,1,1,1,1,1,...,nao
+1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,-17.93,1,1,1,1,1,1,-24.13,1,...,sim
+1,1,-136.94,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,-8.01,1,1,1,1,,1,...,nao
+1,0,1,1,1,1,1,1,1,1,1,1,-4.43,1,1,1,1,1,1,1,1,-33.93,-3.97,1,1,...,nao
+1,1,1,1,1,1,-33.16,1,1,0,1,1,1,1,1,1,-16.53,1,1,1,1,1,1,1,1,1,1,...,sim
+1,1,0,1,1,1,1,1,1,1,-14.13,1,1,1,1,1,1,1,-11.78,1,1,1,1,1,1,1,1,...,sim
 
 \end{verbatim}
  

@@ -158,8 +158,8 @@ Considerações sobre a construção do arquivo Arff:
  \item O ponto de maior margem não pode corresponder ao mesmo modelo nas duas sentenças analisadas.
 Nesse caso será escolhido o ponto consecutivo dentro da região de confusão que possua modelos diferentes, seguindo a ordem decrescente da margem.
 
- \item Os atributos (features) serão os 67 modelos mais uma classe binária que identifica se há ou não confusão naquele frame.
-Lembrando que é conhecido o modelo (HMM) onde cada uma das 15 (quinze) sentenças se encontra frame-a-frame.
+ \item Os atributos (features) serão os 67 modelos mais uma classe binária que identifica se a região de confusão veio, ou não, de um arquivo
+que apresentou erro de reconhecimento. Lembrando que é conhecido o modelo (HMM) onde cada uma das 15 (quinze) sentenças se encontra frame-a-frame.
 
  \item Caso o mesmo modelo apareça em duas os mais sentenças, será escolhido o de maior score acústico.
 

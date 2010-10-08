@@ -34,6 +34,7 @@ class ErrorSegments():
 
 	    margins.sort()
 	    for margin in margins:
+	       #if the states of the max margin is the same continue
 	       if segments[error_segment.correct_index[index_segments]]\
 		     [margin[1]].state == segments[0][margin[1]].state:
 		  continue
@@ -55,24 +56,28 @@ class ErrorSegments():
 		  if biggest < segment[margin[1]].score:
 		     biggest = segment[margin[1]].score
 
-	       util.add_error_segment(new_error_segments,
-		     ErrorSegment(new_segments,
-			error_segment.correct_index[index_segments],
-			error_segment.start_time[index_segments]+margin[1],
-			error_segment.file_name[index_segments]))
-
 	       for samples_key in samples:
 		  samples[samples_key] -= biggest
 	       samples['conf'] = 1
 
-	       self.arff.add(samples)
+	       new_error_segment = ErrorSegment(new_segments,
+			error_segment.correct_index[index_segments],
+			error_segment.start_time[index_segments]+margin[1],
+			error_segment.file_name[index_segments])
+
+	       if (new_error_segment.correct_states == 'ow1[4]' and
+		     new_error_segment.recognized_states == 'v[4]'):
+		  self.arff.add(samples)
+
+		  util.add_error_segment(new_error_segments,
+			new_error_segment)
 	       break
 	    index_segments += 1
 	 index_error_segment += 1
 
-      self.arff.write('out.arff')
+#      self.arff.write('out.arff')
 #      print self.arff
-#      for error_segment in new_error_segments:
-#	 if len(error_segment.segments) > 20:
-#	    print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
+      for error_segment in new_error_segments:
+	 if len(error_segment.segments):# > 20:
+	    print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
       return new_error_segments, self.arff

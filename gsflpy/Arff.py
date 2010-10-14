@@ -4,7 +4,7 @@ class Arff():
    def __init__(self):
       self.matrix = dict()
       self.matrix_row_count = 0
-      self.EMPTY_SCORE = 1
+      self.EMPTY_SCORE = 0
 
    def add(self, line):
       """

@@ -29,6 +29,7 @@ def usage():
    print '  -o: Name of a file to store the figure (png).'
    print '  -p: sufix to be appended in the name of the latttice and write the' +\
         ' png file as output.'
+   print '  -t: Only create an arff of all frames of the input lattice'
    print '  -v: Show more status information.'
    exit(-1)
 
@@ -181,6 +182,7 @@ if __name__ == "__main__":
    ARFF_OUT_FILE = None
    ERROR_SEGMENTS_OUT_FILE = None
    ERROR_SEGMENTS_IN_FILE = None
+   CREATE_ARFF_FROM_ALL = None
 
    if len(sys.argv) == 1:
       usage()
@@ -221,6 +223,9 @@ if __name__ == "__main__":
 	    ARFF_OUT_FILE = str(sys.argv[count+1])
 	 elif sys.argv[count][1] == 'f':
 	    ERROR_SEGMENTS_IN_FILE = str(sys.argv[count+1])
+	 elif sys.argv[count][1] == 't':
+	    CREATE_ARFF_FROM_ALL = True
+	    count -= 1
 	 else:
 	    usage()
 	 count += 2
@@ -293,6 +298,10 @@ if __name__ == "__main__":
       read = ReadLattice(VERBOSE=VERBOSE)
       lattice = read.parse(LAT_FILE)
       sentences = lattice.search_sentences_c(MAX_NODE)
+      if CREATE_ARFF_FROM_ALL:
+	 import Arff
+	 Arff.create_arff_from_sentences(sentences, ARFF_OUT_FILE)
+	 sys.exit(0)
       print 'Recognized:'
       print str(sentences[0]) + '  ' + str(sentences[0]._score)
       if CORRECT_SENTENCE:

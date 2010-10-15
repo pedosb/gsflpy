@@ -80,8 +80,3 @@ class Sentence():
 	    for segment in link.d:
 	       for i in range(int(segment.length*100)):
 		  self.segments.append(segment)
-
-
-
-
-

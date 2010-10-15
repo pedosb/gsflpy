@@ -208,3 +208,31 @@ if __name__=="__main__":
       index_file += 1
 
    arff.append(OUT_ARFF_FILE)
+
+def create_arff_from_sentences(sentences, ARFF_OUT_FILE):
+   arff = Arff()
+   for sentence in sentences:
+      sentence.norm_segments()
+
+   for frame in range(len(sentences[0].segments)):
+      state_list = []
+      segments = []
+      for sentence in sentences:
+	 state_list.insert(0,sentence.segments[frame].state)
+	 segments.append(sentence.segments[frame])
+      if 'v[4]' in state_list and 'ow1[4]' in state_list:
+	 samples = dict()
+	 biggest = segments[0].score
+	 for segment in segments:
+	    if segment.state in samples.keys():
+	       if segment.score < samples[segment.state]:
+		  continue
+	    samples[segment.state] = segment.score
+	    if biggest < segment.score:
+	       biggest = segment.score
+	 for samples_key in samples.keys():
+	    samples[samples_key] = biggest / samples[samples_key]
+	 samples['confusao'] = '?'
+	 arff.add(samples)
+   if ARFF_OUT_FILE:
+      arff.write(ARFF_OUT_FILE)

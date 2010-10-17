@@ -1,4 +1,4 @@
-class Link():
+class Link(object):
     """
     Link Fields
       J=%d Link identifier. Starts link information

@@ -6,7 +6,7 @@ from Segment import Segment
 from ErrorSegment import ErrorSegment
 import util
 
-class ReadLattice():
+class ReadLattice(object):
     COMMENT_CHAR = '#'
 
     def __init__(self, VERBOSE = None):

@@ -146,17 +146,28 @@ class Lattice:
 
       start_node, end_node = self.get_start_and_end_node()
 
-      import gsflc
-      self.links.sort(cmp=Link.cmp_id)
+      import sys
+      if 'Jython' in sys.copyright:
+	 Link.__cmp__=Link.cmp_id
+	 self.links.sort()
+	 del Link.__cmp__
+      else:
+	 self.links.sort(cmp=Link.cmp_id)
       links_c = []
       for link in self.links:
 	 links_c.append([self.nodes.index(link.s), self.nodes.index(link.e)])
 
-      sentences = gsflc.search(self.nodes.index(start_node),\
-	    self.nodes.index(end_node),\
-	    len(self.nodes),\
-	    links_c,\
-	    self._MAX_WORDS)
+      if 'Jython' in sys.copyright:
+	 sentences = self.search_sentences_jython(self.file_name.replace('.lat','.set'))
+      else:
+	 import gsflc
+	 sentences = gsflc.search(self.nodes.index(start_node),\
+	       self.nodes.index(end_node),\
+	       len(self.nodes),\
+	       links_c,\
+	       self._MAX_WORDS)
+	 self.write_sentences_for_jython(self.file_name.replace('.lat','.set'),
+	       sentences)
 
       self.sentences = []
 
@@ -166,10 +177,36 @@ class Lattice:
 	    new_sentence.add(self.links[link_index])
 	 self.sentences.insert(0, new_sentence)
 
-      self.sentences.sort(cmp=Sentence.cmp_score, reverse=True)
+      if 'Jython' in sys.copyright:
+	 Sentence.__cmp__ = Sentence.cmp_score
+	 self.sentences.sort()
+	 self.sentences.reverse()
+	 del Sentence.__cmp__
+      else:
+	 self.sentences.sort(cmp=Sentence.cmp_score, reverse=True)
       del self.sentences[15:len(self.sentences)]
 
       return self.sentences
+
+   def search_sentences_jython(self, sentences_file):
+      sentences = []
+      for line in open(sentences_file):
+	 nodes = line.split()
+	 node_list = []
+	 for node in nodes:
+	    node_list.append(int(node))
+	 sentences.append(node_list)
+      return sentences
+
+   def write_sentences_for_jython(self, sentences_file,
+	 sentences_link):
+      file = open(sentences_file, 'w')
+      for sentence_link in sentences_link:
+	 for node in sentence_link:
+	    file.write(str(node) + ' ')
+	 file.write('\n')
+      file.flush()
+      file.close()
 
    def search_sentences(self, \
 	 max_words = None, \

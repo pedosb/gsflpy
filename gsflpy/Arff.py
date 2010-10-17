@@ -4,11 +4,7 @@ class Arff():
    def __init__(self):
       self.matrix = dict()
       self.matrix_row_count = 0
-<<<<<<< HEAD
-      self.EMPTY_SCORE = 1
-=======
       self.EMPTY_SCORE = 0
->>>>>>> 15best
 
    def add(self, line):
       """
@@ -106,15 +102,6 @@ class Arff():
 	 self.matrix[key] = []
       self.matrix_row_count = 0
 
-<<<<<<< HEAD
-def get_attributies(file_name):
-   """
-   Return a list of attributies in this arff file
-   and the file descriptor opened (the lasted read line
-   was that with the @data
-   """
-   attributies = []
-=======
 def get_attributes(file_name):
    """
    Return a list of attributes in this arff file
@@ -122,7 +109,6 @@ def get_attributes(file_name):
    was that with the @data
    """
    attributes = []
->>>>>>> 15best
    f = open(file_name)
    line = f.readline()
    while (line != ''):
@@ -130,43 +116,19 @@ def get_attributes(file_name):
 	 line_splitted = line.split()
 	 argument = line_splitted[0].lower()
 	 if argument == '@attribute':
-<<<<<<< HEAD
-	    attributies.append(line_splitted[1])
-=======
 	    attributes.append(line_splitted[1])
->>>>>>> 15best
 	 elif argument == '@data':
 	    break
       line = f.readline()
 
-<<<<<<< HEAD
-   return attributies, f
-
-def get_sample(arff_file, attributies_list):
-=======
    return attributes, f
 
 def get_sample(arff_file, attributes_list):
->>>>>>> 15best
    line = arff_file.readline()
    if line == '':
       return None
    elif line == '\n':
       return dict()
-<<<<<<< HEAD
-   attributies = dict()
-   index_attribute = 0
-#   print 'line ', len(line.split(',')), 'att ', len(attributies_list)
-   for attribute in line.split(','):
-      attributies[str(attributies_list[index_attribute])] =\
-	    attribute.strip()
-      index_attribute += 1
-
-   if len(attributies_list) != index_attribute:
-      print 'Warning: Attribute length is different of the sample.'
-
-   return attributies
-=======
    attributes = dict()
    index_attribute = 0
 #   print 'line ', len(line.split(',')), 'att ', len(attributes_list)
@@ -179,7 +141,6 @@ def get_sample(arff_file, attributes_list):
       print 'Warning: Attribute length is different of the sample.'
 
    return attributes
->>>>>>> 15best
 
 
 def usage():

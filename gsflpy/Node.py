@@ -1,4 +1,4 @@
-class Node():
+class Node(object):
     """
     Node Fields
       I=%d Node identifier. Starts node information

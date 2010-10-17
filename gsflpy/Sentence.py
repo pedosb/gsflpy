@@ -1,6 +1,18 @@
 from Link import Link
 from Node import Node
-class Sentence():
+
+def find_correct(sentences, correct_sentence):
+   if correct_sentence == None or correct_sentence == '':
+      return sentences[0], 0
+   count = 0
+   for sentence in sentences:
+      if str(sentence) == correct_sentence:
+	 return sentence, count
+      count += 1
+
+   return None, None
+
+class Sentence(object):
    def __init__(self, link = None):
       self.links = []
       self.nodes = []
@@ -81,7 +93,17 @@ class Sentence():
 	       for i in range(int(segment.length*100)):
 		  self.segments.append(segment)
 
+   def recalc_score(self):
+      """
+      This will recalculate the score based on segments so it must be available and norm.
+      """
+      if not self.segments:
+	 return 
 
-
-
-
+      old_score = self._score
+      self._score = 0
+      for segment in self.segments:
+	 self._score += segment.score
+      if old_score != self._score:
+	 print 'gain in sentence'
+	 print self

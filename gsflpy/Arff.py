@@ -4,7 +4,11 @@ class Arff():
    def __init__(self):
       self.matrix = dict()
       self.matrix_row_count = 0
+<<<<<<< HEAD
       self.EMPTY_SCORE = 1
+=======
+      self.EMPTY_SCORE = 0
+>>>>>>> 15best
 
    def add(self, line):
       """
@@ -102,6 +106,7 @@ class Arff():
 	 self.matrix[key] = []
       self.matrix_row_count = 0
 
+<<<<<<< HEAD
 def get_attributies(file_name):
    """
    Return a list of attributies in this arff file
@@ -109,6 +114,15 @@ def get_attributies(file_name):
    was that with the @data
    """
    attributies = []
+=======
+def get_attributes(file_name):
+   """
+   Return a list of attributes in this arff file
+   and the file descriptor opened (the lasted read line
+   was that with the @data
+   """
+   attributes = []
+>>>>>>> 15best
    f = open(file_name)
    line = f.readline()
    while (line != ''):
@@ -116,19 +130,30 @@ def get_attributies(file_name):
 	 line_splitted = line.split()
 	 argument = line_splitted[0].lower()
 	 if argument == '@attribute':
+<<<<<<< HEAD
 	    attributies.append(line_splitted[1])
+=======
+	    attributes.append(line_splitted[1])
+>>>>>>> 15best
 	 elif argument == '@data':
 	    break
       line = f.readline()
 
+<<<<<<< HEAD
    return attributies, f
 
 def get_sample(arff_file, attributies_list):
+=======
+   return attributes, f
+
+def get_sample(arff_file, attributes_list):
+>>>>>>> 15best
    line = arff_file.readline()
    if line == '':
       return None
    elif line == '\n':
       return dict()
+<<<<<<< HEAD
    attributies = dict()
    index_attribute = 0
 #   print 'line ', len(line.split(',')), 'att ', len(attributies_list)
@@ -141,6 +166,20 @@ def get_sample(arff_file, attributies_list):
       print 'Warning: Attribute length is different of the sample.'
 
    return attributies
+=======
+   attributes = dict()
+   index_attribute = 0
+#   print 'line ', len(line.split(',')), 'att ', len(attributes_list)
+   for attribute in line.split(','):
+      attributes[str(attributes_list[index_attribute])] =\
+	    attribute.strip()
+      index_attribute += 1
+
+   if len(attributes_list) != index_attribute:
+      print 'Warning: Attribute length is different of the sample.'
+
+   return attributes
+>>>>>>> 15best
 
 
 def usage():
@@ -181,16 +220,16 @@ if __name__=="__main__":
 	 usage()
       index += 1
 
-   all_attributies = []
-   attributies = []
+   all_attributes = []
+   attributes = []
    files = []
    for in_file_name in INPUT_FILE_LIST:
-      actual_attrributies, actual_file = get_attributies(in_file_name)
+      actual_attributes, actual_file = get_attributes(in_file_name)
       files.append(actual_file)
-      attributies.append(actual_attrributies)
-      all_attributies += actual_attrributies
+      attributes.append(actual_attributes)
+      all_attributes += actual_attributes
 
-   for attribute in all_attributies:
+   for attribute in all_attributes:
       arff.matrix[str(attribute)] = []
    arff.write(OUT_ARFF_FILE)
 
@@ -198,7 +237,7 @@ if __name__=="__main__":
    for file in files:
       sample = ''
       while sample != None:
-	 sample = get_sample(file, attributies[index_file])
+	 sample = get_sample(file, attributes[index_file])
 	 arff.add(sample)
 	 if arff.matrix_row_count % 500 == 0:
 	    print index_file
@@ -208,3 +247,31 @@ if __name__=="__main__":
       index_file += 1
 
    arff.append(OUT_ARFF_FILE)
+
+def create_arff_from_sentences(sentences, ARFF_OUT_FILE):
+   arff = Arff()
+   for sentence in sentences:
+      sentence.norm_segments()
+
+   for frame in range(len(sentences[0].segments)):
+      state_list = []
+      segments = []
+      for sentence in sentences:
+	 state_list.insert(0,sentence.segments[frame].state)
+	 segments.append(sentence.segments[frame])
+      if 'v[4]' in state_list and 'ow1[4]' in state_list:
+	 samples = dict()
+	 biggest = segments[0].score
+	 for segment in segments:
+	    if segment.state in samples.keys():
+	       if segment.score < samples[segment.state]:
+		  continue
+	    samples[segment.state] = segment.score
+	    if biggest < segment.score:
+	       biggest = segment.score
+	 for samples_key in samples.keys():
+	    samples[samples_key] = biggest / samples[samples_key]
+	 samples['confusao'] = '?'
+	 arff.add(samples)
+   if ARFF_OUT_FILE:
+      arff.write(ARFF_OUT_FILE)

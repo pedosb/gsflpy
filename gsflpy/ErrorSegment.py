@@ -1,4 +1,4 @@
-class ErrorSegment():
+class ErrorSegment(object):
    def __init__(self, \
 	 segments, \
 	 correct_index, \

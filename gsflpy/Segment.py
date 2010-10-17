@@ -1,4 +1,4 @@
-class Segment():
+class Segment(object):
    def __init__(self, \
 	 state, \
 	 length, \

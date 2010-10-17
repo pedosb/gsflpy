@@ -2,12 +2,11 @@
 
 import sys
 
-import weka.classifiers.Classifier as Classifier
+from weka.classifiers import Classifier as Classifier
 from weka.classifiers import *
-import weka.core.Instance
-import weka.core.Instances as Instances
-import weka.core.xml.KOML as KOML
-import weka.core.converters.ConverterUtils.DataSource as DataSource
+from weka.core import Instances as Instances
+from weka.core.xml import KOML as KOML
+from weka.core.converters.ConverterUtils import DataSource as DataSource
 
 import java.io.InputStream as InputStream
 import java.io.FileInputStream as FileInputStream
@@ -25,8 +24,13 @@ if __name__=='__main__':
 
    object_input_stream = ObjectInputStream(FileInputStream(model_file_name))
    classifier = object_input_stream.readObject()
+   classifier_instances = Instances(object_input_stream.readObject())
 
-   if not template.equalHeaders(Instances(object_input_stream.readObject())):
+   for index in range(classifier_instances.numAttributes()):
+      attr = classifier_instances.attribute(index)
+      print attr.name(),attr.index()
+
+   if not template.equalHeaders(classifier_instances):
       print '####ERROR########'
       sys.exit(-1)
 
@@ -41,21 +45,24 @@ if __name__=='__main__':
    test = test_source.getStructure(test.classIndex())
    while test_source.hasMoreElements(test):
       test_inst = test_source.nextElement(test)
+      print test_inst
       testing_evaluation.evaluateModelOnceAndRecordPrediction(
 	    classifier, test_inst)
       with_missing = test_inst.copy()
       with_missing.setDataset(test_inst.dataset())
       with_missing.setMissing(with_missing.classIndex())
+#      inst.dataset().classAttribute().value((int)predValue)
+      print classifier.classifyInstance(with_missing)
       for d in classifier.distributionForInstance(with_missing):
 	 print d
       print
 
-   print testing_evaluation.toSummaryString()
+#   print testing_evaluation.toSummaryString()
    classifications = StringBuffer()
    Evaluation.printClassifications(classifierClassifications, Instances(template, 0),
 	 test_source, template.numAttributes(), None,
 	 False, classifications)
-   print classifications
+#   print classifications
 #  printClassifications(classifierClassifications, new Instances(template, 0),
 #		       source, actualClassIndex + 1, attributesToOutput,
 #		       printDistribution, StringBuffer());

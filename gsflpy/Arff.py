@@ -102,13 +102,13 @@ class Arff():
 	 self.matrix[key] = []
       self.matrix_row_count = 0
 
-def get_attributies(file_name):
+def get_attributes(file_name):
    """
-   Return a list of attributies in this arff file
+   Return a list of attributes in this arff file
    and the file descriptor opened (the lasted read line
    was that with the @data
    """
-   attributies = []
+   attributes = []
    f = open(file_name)
    line = f.readline()
    while (line != ''):
@@ -116,31 +116,31 @@ def get_attributies(file_name):
 	 line_splitted = line.split()
 	 argument = line_splitted[0].lower()
 	 if argument == '@attribute':
-	    attributies.append(line_splitted[1])
+	    attributes.append(line_splitted[1])
 	 elif argument == '@data':
 	    break
       line = f.readline()
 
-   return attributies, f
+   return attributes, f
 
-def get_sample(arff_file, attributies_list):
+def get_sample(arff_file, attributes_list):
    line = arff_file.readline()
    if line == '':
       return None
    elif line == '\n':
       return dict()
-   attributies = dict()
+   attributes = dict()
    index_attribute = 0
-#   print 'line ', len(line.split(',')), 'att ', len(attributies_list)
+#   print 'line ', len(line.split(',')), 'att ', len(attributes_list)
    for attribute in line.split(','):
-      attributies[str(attributies_list[index_attribute])] =\
+      attributes[str(attributes_list[index_attribute])] =\
 	    attribute.strip()
       index_attribute += 1
 
-   if len(attributies_list) != index_attribute:
+   if len(attributes_list) != index_attribute:
       print 'Warning: Attribute length is different of the sample.'
 
-   return attributies
+   return attributes
 
 
 def usage():
@@ -181,16 +181,16 @@ if __name__=="__main__":
 	 usage()
       index += 1
 
-   all_attributies = []
-   attributies = []
+   all_attributes = []
+   attributes = []
    files = []
    for in_file_name in INPUT_FILE_LIST:
-      actual_attrributies, actual_file = get_attributies(in_file_name)
+      actual_attributes, actual_file = get_attributes(in_file_name)
       files.append(actual_file)
-      attributies.append(actual_attrributies)
-      all_attributies += actual_attrributies
+      attributes.append(actual_attributes)
+      all_attributes += actual_attributes
 
-   for attribute in all_attributies:
+   for attribute in all_attributes:
       arff.matrix[str(attribute)] = []
    arff.write(OUT_ARFF_FILE)
 
@@ -198,7 +198,7 @@ if __name__=="__main__":
    for file in files:
       sample = ''
       while sample != None:
-	 sample = get_sample(file, attributies[index_file])
+	 sample = get_sample(file, attributes[index_file])
 	 arff.add(sample)
 	 if arff.matrix_row_count % 500 == 0:
 	    print index_file

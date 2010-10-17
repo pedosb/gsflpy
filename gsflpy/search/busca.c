@@ -252,7 +252,7 @@ gsflc_test(void){
 
 static PyMethodDef gsflc_methods[] = {
    {"search",  gsflc_search, METH_VARARGS,
-      "Search for sentences in one graph.\n For input we expect as node the index of the in a list of node.\n the argument must be in the format:\n <start_node>,<end_node>,<number_of_nodes>,<nodes_trasition>,<max_nodes_per_sentence>\n As an example suppose the graph bellow:\n 0 \n / \\\n 1   2\n \\/\n 3\n Where 0,1,2,3 are the nodes we expect as argument:\n 0,3,4,[[0,1],[0,2],[1,3],[2,3]],10\n the return will be a list of index in the list of transitions indicating the transitions made.\n [[0,2],[1,3]]"},
+      "Search for sentences in one graph.\n As input we expect as node the index of the in a list of node.\n the argument must be in the format:\n <start_node>,<end_node>,<number_of_nodes>,<nodes_trasition>,<max_nodes_per_sentence>\n As an example suppose the graph bellow:\n 0 \n / \\\n 1   2\n \\/\n 3\n Where 0,1,2,3 are the nodes we expect as argument:\n 0,3,4,[[0,1],[0,2],[1,3],[2,3]],10\n the return will be a list of index in the list of transitions indicating the transitions made.\n [[0,2],[1,3]]"},
    {"test", gsflc_test, METH_VARARGS,
       "document"},
    {NULL, NULL, 0, NULL}        /* Sentinel */

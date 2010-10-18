@@ -40,11 +40,16 @@ Etapas:
     \end{itemize}
  \item Score detection:
     \begin{itemize}
-       \item  Construir classificadores de correcção (feature selection) para encontrar as features de entrada 
+       \item  Construir classificadores de correção (feature selection) para encontrar as features de entrada 
               (MFCC, PLP, etc.) para treinar $S$ classificadores. Daí que vem a ideia de heterogeneidade.\\ 
               Mas não ficou claro como treinar esses classificadores:\\
               Como associar confusão entre fones à uma determinada feature?\\
-              Como encontrar a melhor feature para um dado classificador $S$?
+              Como encontrar a melhor feature para um dado classificador $S$?\\
+	       R: Pedro (17/10/2010). Usando algoritmos de feature selection é possível determinar qual/quais
+	      features contribuem mais, ou menos para a decisão de confusão ou não. Pode-se imaginar um ARFF onde
+	      as colunas seriam as features (MFCC por exemplo) e a ultima seria, confusão ou não, para um determinado
+	      par de modelos. Existem então algoritmos de mineração de dados que são capazes de apontar qual/quais
+	      colunas (features) mais contribuem para o resultado.
     \end{itemize}
 \end{enumerate}
 
@@ -127,19 +132,22 @@ de cada região de confusão será considerado.
 
 Exemplo numérico: Cada linha da matriz $H$ (15 x $N$) abaixo representa uma das
 sentenças concorrentes com o seu respectivo score acústico
-frame-a-frame. Para exemplificar, apenas a primeira e segunda linhas
+frame-a-frame. Para exemplificar, apenas as primeiras três linhas
 serão representadas. A primeira linha da matriz $H$ é composta pelo
 score acústico (likelihood) frame-a-frame da sentença reconhecida.
 A segunda linha é composta pelo score acústico frame-a-frame da sentença correta.\\
 
 $H = \begin{bmatrix} -80&-80&-100&-120&-90&-80&-80&-50&-60&-100
                   \\ -80&-80&-120&-70&-130&-80&-80&-70&-90&-100
+		  \\ -80&-100&-120&-60&-80&-75&-80&-100&-50&-100
                   \\  ...&...&...&...&...&...&...&...&...&... \end{bmatrix}$\\
 
-Em seguida, a matriz $H$ é normalizada em função do maior score acústico em cada frame:\\
+Em seguida, a matriz $H$ é normalizada dividindo-se o score $b_{q_i}^{f_s}(1)$ pelo $\max_{q_i}(b_{q_i}^{f_s}(1))$, o mesmo
+acontece para o frame 2, 3,...,N. Resultando na matriz abaixo.
 
-$\bar{H} = \begin{bmatrix} 0& 0& 0&   -50& 0&  0& 0& 0&   0& 0
-                        \\ 0& 0& -20&  0& -40& 0& 0& -20& -30& 0
+$\bar{H} = \begin{bmatrix} 1& 1 &  1 &0.5 &0.88&0.94&1& 1 & 0.83& 1
+                        \\ 1& 1 &0.83&0.86&0.61&0.94&1&0.7& 0.55& 1
+                        \\ 1&0.8&0.83& 1  &  1 & 1  &1&0.5&  1  & 1
                   \\  ...&...&...&...&...&...&...&...&...&...  \end{bmatrix}$\\
 
 Foram identificadas duas regiões de confusão na matriz $\bar{H}$. A primeira entre os frames 3-5 e a segunda entre os frames 8-9.
@@ -165,7 +173,7 @@ que apresentou erro de reconhecimento. Lembrando que é conhecido o modelo (HMM) 
  \item Caso o mesmo modelo apareça em duas os mais sentenças, será escolhido o de maior score acústico.
 
  \item Quando um dos modelos, que são os atributos do arquivo Arff, não é encontrado em nenhuma das 15 (quinze) sentenças analisadas, 
-seu valor é preenchido com 1 (um).
+seu valor é preenchido com 0 (zero).
 
  \item Uma região de confusão não pode se repetir dentro da mesma lattice. Esse fato acontece muito na segunda base de dados, onde duas ou mais concorrentes, 
 quando comparadas com a sentença correta, apresentam a mesma região de confusão. Entende-se por regiões de confusão iguais aquelas que estão situadas 
@@ -176,84 +184,45 @@ no mesmo intervalo de tempo, ou seja, iniciam no mesmo frame e possuem o mesmo t
 Abaixo segue o conteúdo de um arquivo Arff:
 
 \begin{verbatim}
-@attribute iy1[3] numeric
+@relation 'o_v_ow1_test'
+
 @attribute w[2] numeric
 @attribute uw1[3] numeric
 @attribute v[4] numeric
 @attribute s[2] numeric
-@attribute ao1[3] numeric
-@attribute ow2[3] numeric
+@attribute ey1[2] numeric
 @attribute ey1[4] numeric
-@attribute s[4] numeric
-@attribute v[2] numeric
-@attribute k[3] numeric
 @attribute n[3] numeric
-@attribute ay1[3] numeric
-@attribute eh1[3] numeric
-@attribute k[2] numeric
 @attribute ax[2] numeric
 @attribute z[3] numeric
-@attribute r[3] numeric
-@attribute sil[2] numeric
-@attribute eh1[4] numeric
 @attribute ow1[4] numeric
 @attribute th[3] numeric
-@attribute ey1[2] numeric
 @attribute t[2] numeric
-@attribute eh1[2] numeric
 @attribute sp[2] numeric
-@attribute sil[4] numeric
-@attribute w[4] numeric
-@attribute ey1[3] numeric
-@attribute ih1[3] numeric
 @attribute t[4] numeric
 @attribute ow1[2] numeric
-@attribute ao1[2] numeric
-@attribute f[2] numeric
-@attribute iy1[2] numeric
-@attribute ah1[4] numeric
-@attribute s[3] numeric
+@attribute ey1[3] numeric
 @attribute uw1[4] numeric
-@attribute ay1[4] numeric
 @attribute n[4] numeric
-@attribute uw1[2] numeric
-@attribute ah1[3] numeric
-@attribute ow2[2] numeric
 @attribute v[3] numeric
-@attribute ao1[4] numeric
-@attribute z[4] numeric
 @attribute n[2] numeric
-@attribute ay1[2] numeric
-@attribute w[3] numeric
-@attribute z[2] numeric
-@attribute ax[3] numeric
 @attribute r[4] numeric
-@attribute ow2[4] numeric
-@attribute r[2] numeric
 @attribute ax[4] numeric
-@attribute ih1[2] numeric
+@attribute r[2] numeric
 @attribute t[3] numeric
 @attribute ih1[4] numeric
 @attribute th[2] numeric
-@attribute sil[3] numeric
-@attribute ah1[2] numeric
 @attribute iy1[4] numeric
-@attribute f[3] numeric
-@attribute f[4] numeric
-@attribute k[4] numeric
 @attribute ow1[3] numeric
-@attribute th[4] numeric
-@attribute conf {sim,nao}
+@attribute confusao {sim,nao}
 
 @data
-1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,-12.94,1,1,1,1,1,...,sim
-1,1,1,1,1,1,1,1,1,1,1,1,1,-3.61,1,1,1,1,1,1,-2.41,1,1,1,1,0,1,...,nao
-1,1,1,-21.2,1,1,1,1,0,1,1,1,1,1,1,1,1,-3.47,-16.97,1,1,1,1,1,1,...,nao
-1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,-17.93,1,1,1,1,1,1,-24.13,1,...,sim
-1,1,-136.94,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,-8.01,1,1,1,1,,1,...,nao
-1,0,1,1,1,1,1,1,1,1,1,1,-4.43,1,1,1,1,1,1,1,1,-33.93,-3.97,1,1,...,nao
-1,1,1,1,1,1,-33.16,1,1,0,1,1,1,1,1,1,-16.53,1,1,1,1,1,1,1,1,1,1,...,sim
-1,1,0,1,1,1,1,1,1,1,-14.13,1,1,1,1,1,1,1,-11.78,1,1,1,1,1,1,1,1,...,sim
+0,0,1,0,0,0,0,0,0,0.395459,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,nao
+0,0,1,0,0,0,0,0,0,0.835561,0,0,0,0,0,0,0,0,0,0,0.917768,0,0,0,0,0,0,0,nao
+0,0,1,0,0,0,0.933223,0,0,0.868315,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,sim
+0,0,1,0,0,0,0,0,0,0.843564,0,0,0,0,0,0,0.841152,0,0,0,0,0,0,0,0,0,0,0,sim
+0,0,1,0,0,0,0,0,0,0.882949,0,0,0,0,0,0,0,0.968354,0,0,0,0,0,0,0,0,0,0,sim
+0,0,1,0,0,0,0.954019,0,0,0.537128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,nao
 
 \end{verbatim}
  

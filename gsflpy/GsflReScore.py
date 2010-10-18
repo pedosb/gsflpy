@@ -80,11 +80,11 @@ def re_score(sentences,
 	       biggest = segment.score
 	 for samples_key in samples.keys():
 	    samples[samples_key] = biggest / samples[samples_key]
-	 samples['confusao'] = '?'
+	 samples['confusion'] = '?'
 
 	 pred_value, confidence = classify(samples)
 
-	 if pred_value == 'sim':
+	 if pred_value == 'True':
 	    for index in range(len(sentences)):
 	       segment = sentences[index].segments[frame]
 	       if segment.state == states_confusion[1]:
@@ -124,3 +124,4 @@ if __name__=='__main__':
 	 if str(sentences[0]) != old:
 	    print 'STATUS: New correct sentence is the number', correct_sentence_index
 	    print sentences[correct_sentence_index],sentences[correct_sentence_index]._score
+	    print 'MUDOU'

@@ -1,0 +1,87 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+
+%To use url
+\usepackage{hyperref}
+%\url{http://www.wikibooks.org}
+%\href{http://www.wikibooks.org}{wikibooks home}
+
+
+\author{Pedro Batista \and Nelson Neto \and Aldebaro Klautau}
+
+\title{gsflpy Manual}
+
+
+\begin{document}
+
+\date{\today}
+
+\maketitle
+
+\begin{abstract}
+Este documento tem como objetivo, capacitar o leitor para usar o pacote
+gsflpy, este é capaz de percorrer lattices, fazer rescore baseado em 
+detecção de confusões entre frames, dentre outras funcionalidades.
+Antes de seguir neste documento recomenda-se a leitura do proposta.
+\end{abstract}
+
+\section{Instalação}
+\subsection{Pré-requisitos}
+Para a instalação assume-se que os seguintes pacotes de terceiros estão
+instalados no sistema:
+\begin{itemize}
+   \item \href{http://python.org}{Python 2.*}
+   \item \href{http://www.jython.org/}{Jython 2.*}
+   \item \href{http://matplotlib.sourceforge.net/}{matplotlib}
+   \item \href{http://www.cs.waikato.ac.nz/ml/weka/}{Weka 3.6}
+\end{itemize}
+
+\subsubsection{Instalando Python}
+O interpretador Python é disponível em pacote apt para Ubuntu, para
+instala-lo o comando abaixo é suficiente.
+\begin{verbatim}
+$sudo apt-get install python
+\end{verbatim}
+
+\subsubsection{Instalando Jython}
+O interpretador Jython é disponível em pacote apt para Ubuntu, para
+instala-lo o comando abaixo é suficiente.
+\begin{verbatim}
+$sudo apt-get install jython
+\end{verbatim}
+
+\subsubsection{Instalando matplotlib}
+A matplotlib é uma biblioteca para plotar gráficos em Python, no Ubuntu
+o pacote do apt pode ser instalado como mostrado abaixo.
+\begin{verbatim}
+$sudo apt-get install python-matplotlib
+\end{verbatim}
+
+\subsubsection{Instalando Weka}
+Para usar o GsflReScore precisamos do pacote Weka no \texttt{CLASSPATH}. Para
+isso podemos fazer o download da versão mais recente em:
+\url{http://www.cs.waikato.ac.nz/ml/weka/}. Uma vez feito o download
+podemos descompactar o arquivo como se seque, assumindo que o download
+foi feito na pasta \texttt{\~{}/Downloads}.
+\begin{verbatim}
+$cd ~
+$mkdir programs
+$cd programs
+$unzip -x Downloads/weka-3-6-3.zip
+\end{verbatim}
+Para colocar o Weka no seu \texttt{CLASSPATH} e possibilitar seu uso pelo gsflpy,
+deve-se adicionar a seguinte linha no seu arquivo \texttt{\~{}/.bashrc} (se não existir
+você pode cria-lo). Lembre-se de trocar \texttt{user} pelo seu nome de usuário.
+\begin{verbatim}
+export CLASSPATH=$CLASSPAH:/home/user/programs/weka-3-6-3/weka.jar
+\end{verbatim}
+Pronto agora basta reiniciar seu \texttt{bash}, ou se preferir digitar o comando abaixo.
+\begin{verbatim}
+$source ~/.bashrc
+\end{verbatim}
+
+\bibliographystyle{play}
+\bibliography{bib.bib}
+
+\end{document}

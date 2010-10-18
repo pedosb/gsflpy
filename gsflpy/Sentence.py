@@ -1,9 +1,11 @@
 from Link import Link
 from Node import Node
+from Lattice import Lattice
+from ReadLattice import ReadLattice
 
 def find_correct(sentences, correct_sentence):
    if correct_sentence == None or correct_sentence == '':
-      return sentences[0], 0
+      return sentences[0], None
    count = 0
    for sentence in sentences:
       if str(sentence) == correct_sentence:
@@ -11,6 +13,37 @@ def find_correct(sentences, correct_sentence):
       count += 1
 
    return None, None
+
+def get_sentences(lattice_ops):
+   """
+   lattice_ops must be a tuple with:
+      (lat_file_name, max_nodes, correct_sentence)
+   """
+   read = ReadLattice()
+   lattice = read.parse(lattice_ops[0])
+   sentences = lattice.search_sentences_c(lattice_ops[1])
+   correct_sentence = None
+   correct_sentence_index = None
+
+   if len(sentences) < 1:
+      print 'WARNING: No sentences found.'
+      return None, None, lattice
+
+   print 'Recognized:'
+   print sentences[0],sentences[0]._score
+   if lattice_ops[2] == '' or lattice_ops[2] == None:
+      return sentences, None, lattice
+
+   correct_sentence, correct_sentence_index = \
+	 find_correct(sentences, lattice_ops[2])
+
+   if not correct_sentence:
+      print 'WARNING: Correct sentence not found.'
+      return sentences, None, lattice
+   print 'Correct was the sentence number',correct_sentence_index
+   print sentences[correct_sentence_index],sentences[correct_sentence_index]._score
+
+   return sentences, correct_sentence_index, lattice
 
 class Sentence(object):
    def __init__(self, link = None):

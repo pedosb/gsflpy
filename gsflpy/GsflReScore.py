@@ -2,43 +2,18 @@
 
 import sys
 
-from Sentence import Sentence, find_correct
+from Sentence import Sentence, find_correct, get_sentences
 from ConsoleOptions import ConsoleOptions
 from ReadLattice import ReadLattice
 
 import weka.core.Instance as Instance
 import weka.classifiers.Classifier as Classifier
 
-def get_sentences(lattice_ops):
-   """
-   lattice_ops must be a tuple with:
-      (lat_file_name, max_nodes, correct_sentence)
-   """
-   read = ReadLattice()
-   lattice = read.parse(lattice_ops[0])
-   sentences = lattice.search_sentences_c(lattice_ops[1])
-   correct_sentence = None
-   correct_sentence_index = None
-
-   if len(sentences) < 1:
-      print 'WARNING: No sentences found.'
-      return None, None
-
-   print 'Recognized:'
-   print sentences[0],sentences[0]._score
-   if lattice_ops[2] == '' or lattice_ops[2] == None:
-      return sentences, None
-
-   correct_sentence, correct_sentence_index = \
-	 find_correct(sentences, lattice_ops[2])
-
-   if not correct_sentence:
-      print 'WARNING: Correct sentence not found.'
-      return sentences, None
-   print 'Correct was the sentence number',correct_sentence_index
-   print sentences[correct_sentence_index],sentences[correct_sentence_index]._score
-
-   return sentences, correct_sentence_index
+def usage():
+   print (sys.argv[0] + ' -L <lattice_and_transcription_file_path>' +
+	 ' -m <weka_classifier_model>')
+   print
+   print '  -m: Model of a classifier trainned by weka.'
 
 def classify(samples):
    test_inst = Instance(classifier_instances.numAttributes())
@@ -119,9 +94,10 @@ def re_score(sentences,
       sentence.recalc_score()
 
 if __name__=='__main__':
-   options = ConsoleOptions(sys.argv)
+   options = ConsoleOptions(sys.argv, usage=usage)
    LAT_FILE, MAX_NODE, CORRECT_SENTENCE = options.get_option('L')
    classifier, classifier_instances = options.get_option('m')
+   options.check_all_read()
 
    if not isinstance(LAT_FILE, list):
       options.usage('ERROR: You must specify the LATTICE_FILES')
@@ -129,7 +105,7 @@ if __name__=='__main__':
       options.usage('ERROR: You must specify an weka classify model to re score.')
 
    for index in range(len(LAT_FILE)):
-      sentences, correct_sentence_index = get_sentences(
+      sentences, correct_sentence_index, None = get_sentences(
 	    (LAT_FILE[index],
 	     MAX_NODE[index],
 	     CORRECT_SENTENCE[index]))
@@ -140,12 +116,11 @@ if __name__=='__main__':
       sentences.reverse()
 
       print
-      correct_sentence, new_correct_sentence_index = \
+      correct_sentence, correct_sentence_index = \
 	    find_correct(sentences, CORRECT_SENTENCE[index])
       if not correct_sentence:
 	 print 'WARNING: Correct sentence not found.'
       else:
-	 print 'Correct was the sentence number',new_correct_sentence_index
-	 print sentences[new_correct_sentence_index],sentences[new_correct_sentence_index]._score
 	 if str(sentences[0]) != old:
-	    print 'mudou'
+	    print 'STATUS: New correct sentence is the number', correct_sentence_index
+	    print sentences[correct_sentence_index],sentences[correct_sentence_index]._score

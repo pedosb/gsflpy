@@ -1,4 +1,3 @@
-from Sentence import Sentence
 from Link import Link
 from ErrorSegment import ErrorSegment
 import util
@@ -143,6 +142,7 @@ class Lattice:
 	 self._MAX_WORDS = int(max_words)
       else:
 	 self._MAX_WORDS = None
+      from Sentence import Sentence
 
       start_node, end_node = self.get_start_and_end_node()
 

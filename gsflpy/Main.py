@@ -1,46 +1,43 @@
 #! /usr/bin/env python
 import sys
 from ReadLattice import ReadLattice
-from Sentence import Sentence
+from Sentence import Sentence, find_correct, get_sentences
 from ErrorSegment import ErrorSegment
 from ErrorSegments import ErrorSegments
+from ConsoleOptions import ConsoleOptions
 
 def usage():
-   print ('Usage: ' + sys.argv[0] + ' ' +
-	 '(((-l <lattice_file> ' +
-	 '[-w <int_number>] ' +
-	 '[-c <string>] ' +
-	 '[-o <figure.png>]) | ' 
-	 '(-L <lattice_and_transcriptions_file_path> ' + 
-	 '[-p <figure_sufix>])) | ' +
-	 '[-f <in_error_file>] ' +
-	 '[-A <arff_file>]) | ' +
-	 '[-F <out_error_file>] ' +
-	 '[-v]')
-   print '  -l: File that contains the lattice.'
-   print '  -L: File that contains the path for lattice file (whithout spaces)'
-   print '      followed by the number of max words and then correct transcription (one per line).'
-   print '  -A: Write output in an ARFF file.'
-   print '  -w: Max number of nodes per sentence.'
-   print '  -s: Max score diff (for prunning).'
-   print '  -c: Correct sentence.'
-   print '  -F: File to write the correct and the recognized sentences with they score.'
-   print '  -f: File with the recognized sentences'
-   print '  -o: Name of a file to store the figure (png).'
-   print '  -p: sufix to be appended in the name of the latttice and write the' +\
-        ' png file as output.'
-   print '  -t: Only create an arff of all frames of the input lattice'
-   print '  -v: Show more status information.'
-   exit(-1)
-
-def find_correct(sentences, correct_sentence):
-   count = 0
-   for sentence in sentences:
-      if str(sentence) == correct_sentence:
-	 return sentence, count
-      count += 1
-
-   return None, None
+   print (sys.argv[0]+' (-L <file> | (-l <file> -w <int> -c <sentence>))'+
+	 ' [-F <file>]'+
+	 ' [-isl]')
+   print
+#   print ('Usage: ' + sys.argv[0] + ' ' +
+#	 '(((-l <lattice_file> ' +
+#	 '[-w <int_number>] ' +
+#	 '[-c <string>] ' +
+#	 '[-o <figure.png>]) | ' 
+#	 '(-L <lattice_and_transcriptions_file_path> ' + 
+#	 '[-p <figure_sufix>])) | ' +
+#	 '[-f <in_error_file>] ' +
+#	 '[-A <arff_file>]) | ' +
+#	 '[-F <out_error_file>] ' +
+#	 '[-v]')
+#   print '  -l: File that contains the lattice.'
+#   print '  -L: File that contains the path for lattice file (whithout spaces)'
+#   print '      followed by the number of max words and then correct transcription (one per line).'
+#   print '  -A: Write output in an ARFF file.'
+#   print '  -w: Max number of nodes per sentence.'
+#   print '  -s: Max score diff (for prunning).'
+#   print '  -c: Correct sentence.'
+#   print '  -F: File to write the correct and the recognized sentences with they score.'
+#   print '  -f: File with the recognized sentences'
+#   print '  -o: Name of a file to store the figure (png).'
+#   print '  -p: sufix to be appended in the name of the latttice and write the' +\
+#        ' png file as output.'
+#   print '  -t: Only create an arff of all frames of the input lattice'
+#   print '  -v: Show more status information.'
+#   exit(-1)
+   pass
 
 def plot():
       for sentence in sentences:
@@ -49,6 +46,8 @@ def plot():
 	 else:
 	    sentence.plot = False
 
+      #TODO make the code below really plot with different colors
+      #all sentences marked with 'plot' 'True'
       import matplotlib.pyplot as plt
       if OUT_FIGURE:
 	 figure = plt.figure(figsize=(20,15), dpi=200)
@@ -153,6 +152,8 @@ def plot_error_segment(error_segments):
 #   plt.show()
 
 def write_error_segmets(error_segments):
+   if not ERROR_SEGMENTS_OUT_FILE:
+      return
    file_out = open(ERROR_SEGMENTS_OUT_FILE, 'a')
    for error_segment in error_segments:
       i = 0
@@ -171,7 +172,89 @@ def write_error_segmets(error_segments):
    file_out.flush()
    file_out.close()
 
+def remove_error_segments_out_file():
+   if ERROR_SEGMENTS_OUT_FILE:
+      try:
+	 import os
+	 os.remove(ERROR_SEGMENTS_OUT_FILE)
+      except OSError:
+	 pass
+
+def handle_lat_file(lattice_ops,
+      error_segments = None):
+   sentences, correct_sentence_index, lattice = get_sentences(lattice_ops)
+   if not sentences:
+      return error_segments
+   if error_segments == None:
+      error_segments = []
+
+   if correct_sentence_index == None:
+      print 'ERROR: Can not do anything (correct sentence not found).' 
+      STATS['correct_not_found'] += 1
+      return error_segments
+
+   if correct_sentence_index == 0:
+      if IS_CORRECT_LATTICE:
+	 for i in range(1,len(sentences)):
+	    error_segments = lattice.get_error_segments(i, error_segments)
+      else:
+	 print ("WARNING: Correct regonized file but 'IS_CORRECT_LATTICE'" +
+	       " is set to 'False'.")
+      STATS['acc_files'] += 1
+      pass
+   else:
+      if not IS_CORRECT_LATTICE:
+	 error_segments = lattice.get_error_segments(correct_sentence_index, error_segments)
+   return error_segments
+
+def clean_and_write_error_segments(error_segments):
+   for error_segment in error_segments:
+      error_segment.clean()
+      print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
+   write_error_segmets(error_segments)
+
+def handle_lattice():
+   if not LAT_FILE:
+      return
+   if not isinstance(LAT_FILE, list):
+      return
+
+   STATS['acc_files'] = 0
+   STATS['correct_not_found'] = 0
+   STATS['files_count'] = 0
+
+   remove_error_segments_out_file()
+   index = 0
+   error_segments = []
+   for lat_file in LAT_FILE:
+      error_segments = handle_lat_file((lat_file, MAX_NODE[index], CORRECT_SENTENCE[index]),
+	 error_segments)
+
+      print index
+      if index % 25 == 0:
+	 clean_and_write_error_segments(error_segments)
+	 del error_segments
+	 error_segments = []
+      index += 1
+   STATS['files_count'] = index
+   #plot_error_segment(error_segments)
+   clean_and_write_error_segments(error_segments)
+
+def handle_error_segments():
+   read = ReadLattice(VERBOSE=VERBOSE)
+   error_segments = read.parse_error_segment_file(ERROR_SEGMENTS_IN_FILE)
+#      write_error_segmets(error_segments)
+#      for error_segment in error_segments:
+#	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
+   err = ErrorSegments(error_segments, STATES_CONFUSION, IS_CORRECT_LATTICE,
+	 CONFUSION)
+   new_error_segments, arff = err.most_different()
+   if ARFF_OUT_FILE:
+      arff.write(ARFF_OUT_FILE)
+
+
 if __name__ == "__main__":
+   STATS=dict()
    LAT_FILE = None
    MAX_NODE = None
    CORRECT_SENTENCE = None
@@ -183,137 +266,54 @@ if __name__ == "__main__":
    ERROR_SEGMENTS_OUT_FILE = None
    ERROR_SEGMENTS_IN_FILE = None
    CREATE_ARFF_FROM_ALL = None
+   IS_CORRECT_LATTICE = False
+   STATES_CONFUSION = None
+   CONFUSION = False
 
-   if len(sys.argv) == 1:
-      usage()
+   option = ConsoleOptions(sys.argv, usage=usage)
 
-   count = 1
-   while count < len(sys.argv):
-      if sys.argv[count][0] == '-':
-	 if sys.argv[count][1] == 'l':
-	    LAT_FILE = sys.argv[count+1]
-	 elif sys.argv[count][1] == 'L':
-	    LAT_FILE = []
-	    MAX_NODE = []
-	    CORRECT_SENTENCE = []
-	    for line in open(sys.argv[count+1]):
-	       words = line.split()
-	       LAT_FILE.append(words[0])
-	       MAX_NODE.append(words[1])
-	       sentence = ""
-	       for word in words[2:len(words)]:
-		  sentence += word + ' '
-	       CORRECT_SENTENCE.append(sentence.strip())
-	 elif sys.argv[count][1] == 'w':
-	    MAX_NODE = int(sys.argv[count+1])
-	 elif sys.argv[count][1] == 'c':
-	    CORRECT_SENTENCE = sys.argv[count+1].strip()
-	 elif sys.argv[count][1] == 'o':
-	    OUT_FIGURE = sys.argv[count+1].strip()
-	 elif sys.argv[count][1] == 'v':
-	    VERBOSE = True
-	    count -= 1
-	 elif sys.argv[count][1] == 's':
-	    MAX_FRAME_DIFF = float(sys.argv[count+2])
-	    MAX_SCORE_DIFF = float(sys.argv[count+1])
-	    count += 1
-	 elif sys.argv[count][1] == 'F':
-	    ERROR_SEGMENTS_OUT_FILE = str(sys.argv[count+1])
-	 elif sys.argv[count][1] == 'A':
-	    ARFF_OUT_FILE = str(sys.argv[count+1])
-	 elif sys.argv[count][1] == 'f':
-	    ERROR_SEGMENTS_IN_FILE = str(sys.argv[count+1])
-	 elif sys.argv[count][1] == 't':
-	    CREATE_ARFF_FROM_ALL = True
-	    count -= 1
-	 else:
-	    usage()
-	 count += 2
-      else:
-	 usage()
-   if ERROR_SEGMENTS_IN_FILE:
-      read = ReadLattice(VERBOSE=VERBOSE)
-      error_segments = read.parse_error_segment_file(ERROR_SEGMENTS_IN_FILE)
-#      write_error_segmets(error_segments)
-#      for error_segment in error_segments:
-#	 print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
-      err = ErrorSegments(error_segments)
-      new_error_segments, arff = err.most_different()
+   OUT_FIGURE = option.get_option('o')
+   IS_CORRECT_LATTICE = option.get_option('iscorrectlattice')
+   STATES_CONFUSION = option.get_option('p')
+   CONFUSION = option.get_option('C')
+
+   ERROR_SEGMENTS_OUT_FILE = option.get_option('F')
+   ERROR_SEGMENTS_IN_FILE = option.get_option('f')
+   ARFF_OUT_FILE = option.get_option('A')
+
+   LAT_FILE, MAX_NODE, CORRECT_SENTENCE = option.get_option('L')
+   if LAT_FILE == None:
+      LAT_FILE = option.get_option('l')
+      if LAT_FILE != None:
+	 MAX_NODE = option.get_option('w')
+	 if MAX_NODE == None:
+	    self.usage(error_options='w')
+	 CORRECT_SENTENCE = option.get_option('c')
+	 if CORRECT_SENTENCE == None or CORRECT_SENTENCE == '':
+	    self.usage(error_options='c')
+	 LAT_FILE = [LAT_FILE]
+	 MAX_NODE = [MAX_NODE]
+	 CORRECT_SENTENCE = [CORRECT_SENTENCE]
+
+   option.check_all_read()
+
+   if LAT_FILE:
+      if ERROR_SEGMENTS_IN_FILE:
+	 option.usage('ERROR: -f Cannot be used with -L')
+      if STATES_CONFUSION:
+	 option.usage('ERROR: -p Cannot be used with -L')
       if ARFF_OUT_FILE:
-	 arff.write(ARFF_OUT_FILE)
+	 option.usage('ERROR: -A Cannot be used with -L')
+      handle_lattice()
 
-   elif isinstance(LAT_FILE, list):
-      try:
-	 import os
-	 os.remove(ERROR_SEGMENTS_OUT_FILE)
-      except OSError:
-	 pass
-      index = 0
-      error_segments = []
-      for lat_file in LAT_FILE:
-	 read = ReadLattice(VERBOSE=VERBOSE)
-	 lattice = read.parse(lat_file)
-	 sentences = lattice.search_sentences_c(MAX_NODE[index])
-	 correct_sentence = None
-	 number = None
+   elif ERROR_SEGMENTS_IN_FILE:
+      if not STATES_CONFUSION:
+	 option.usage('ERROR: Now we want specific models to work see -p')
+      handle_error_segments()
 
-	 if len(sentences) < 1:
-	    print 'WARNING: No sentences found'
-	 else:
-	    print 'Recognized:'
-	    print str(sentences[0]) + ' ' + str(sentences[0]._score)
-	    if CORRECT_SENTENCE[index] != '':
-	       correct_sentence, number = find_correct(sentences, 
-		     CORRECT_SENTENCE[index])
 
-	    print 'sentences ' + str(len(sentences))
-	    if not correct_sentence:
-	       print 'WARNING: Correct sentence not found!!!'
-	       if CORRECT_SENTENCE[index] == '':
-		  for i in range(1,len(sentences)):
-		     error_segments = lattice.get_error_segments(i, error_segments)
-	    else:
-	       print 'Correct was the sentence number ' + str(number + 1) + ':'
-	       print (str(correct_sentence) + '  ' + 
-		  str(correct_sentence._score))
-#	       print lat_file
-#	       plot()
-	       error_segments = lattice.get_error_segments(number, error_segments) 
-	    print index
-	    print 'size ErrorSegment ' + str(len(error_segments)) + ' ' + str(sys.getsizeof(error_segments))
-	    if index % 25 == 0:
-	       for error_segment in error_segments:
-		  error_segment.clean()
-	       write_error_segmets(error_segments)
-	       del error_segments
-	       error_segments = []
-	    del lattice, read, sentences
-	 index += 1
-      #plot_error_segment(error_segments)
-      for error_segment in error_segments:
-	 error_segment.clean()
-	 print str(error_segment) + ' qtd ' + str(len(error_segment.segments))
-      write_error_segmets(error_segments)
-   else:
-      read = ReadLattice(VERBOSE=VERBOSE)
-      lattice = read.parse(LAT_FILE)
-      sentences = lattice.search_sentences_c(MAX_NODE)
-      if CREATE_ARFF_FROM_ALL:
-	 import Arff
-	 Arff.create_arff_from_sentences(sentences, ARFF_OUT_FILE)
-	 sys.exit(0)
-      print 'Recognized:'
-      print str(sentences[0]) + '  ' + str(sentences[0]._score)
-      if CORRECT_SENTENCE:
-	 correct_sentence, number = find_correct(sentences, CORRECT_SENTENCE)
-	 if not correct_sentence:
-	    print 'WARNING: Correct sentence not found!!!'
-	 else:
-	    print 'Correct was the sentence number ' + str(number + 1) + ':'
-	    print str(correct_sentence) + '  ' + \
-		  str(correct_sentence._score)
-	    plot()
-
-	 error_segments = lattice.get_error_segments(number)
-	 for error_segment in error_segments:
-	    print str(error_segment) + ' qtd ' + str(len(error_segment.correct_segments))
+   print '################################'
+   print '# STATS'
+   for (key, value) in STATS.items():
+      print '#',key,'=',value
+   print '################################'

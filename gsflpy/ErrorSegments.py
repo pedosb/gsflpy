@@ -62,6 +62,10 @@ class ErrorSegments():
 	       biggest = segments[0][margin[1]].score
 	       new_segments = []
 	       for segment in segments:
+		  if segment[margin[1]].score == 0:
+		     print 'WARNING: Throwing away information (score equal 0)'
+		     print 'file:',error_segment.file_name[index_segments]
+		     continue
 		  new_segments.append([segment[margin[1]]])
 		  #the segment is not the first and not the recognized?
 		  if segment != segments[0] and \
@@ -84,14 +88,20 @@ class ErrorSegments():
 			error_segment.start_time[index_segments]+margin[1],
 			error_segment.file_name[index_segments])
 
-	       if (new_error_segment.correct_states == self.states_confusion[1] and
-		     new_error_segment.recognized_states ==
-		     self.states_confusion[0]):
-		  samples['filename'] = error_segment.file_name[index_segments]
-		  self.arff.add(samples)
-
-		  util.add_error_segment(new_error_segments,
-			new_error_segment)
+	       try:
+		  index_correct = -1
+		  while True:
+		     index_correct = self.states_confusion[1].index(new_error_segment.correct_states, index_correct+1)
+		     if self.states_confusion[0][index_correct] == new_error_segment.recognized_states:
+#	       if (new_error_segment.correct_states == self.states_confusion[1] and
+#		     new_error_segment.recognized_states ==
+#		     self.states_confusion[0]):
+			samples['filename'] = error_segment.file_name[index_segments]
+			self.arff.add(samples)
+			util.add_error_segment(new_error_segments,
+			      new_error_segment)
+	       except ValueError:
+		  pass
 	       break
 	    index_segments += 1
 	 index_error_segment += 1

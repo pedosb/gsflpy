@@ -28,7 +28,11 @@ class ConsoleOptions(object):
 	    return None, None, None
 	 if option == 'm':
 	    return None, None
-	 if option in ['l', 'w', 'c', 'o', 'F', 'A', 'f', 'p']:
+	 if option in ['l', 'w', 'c', 'o', 'F', 'A', 'f', 'g']:
+	    return None
+	 if option == 'p':
+	    return self.get_option('fp')
+	 if option == 'fp':
 	    return None
 	 if option in ['iscorrectlattice', 'C']:
 	    return False
@@ -71,19 +75,33 @@ class ConsoleOptions(object):
 	 return classifier, classifier_instances
       if option == 'l':
 	 return self.get_arg(option_index+1)
-      if option == 'w':
+      if option in ['w', 'g']:
 	 number = self.get_arg(option_index+1)
 	 try:
 	    return int(number)
 	 except ValueError:
-	    self.usage("-w argument must be an integer. Found: '" + 
+	    self.usage('-'+str(option)+" argument must be an integer. Found: '" + 
 		  str(number) + "'.")
       if option in ['c', 'o', 'F', 'A', 'f']:
 	 return self.get_arg(option_index+1)
       if option in ['iscorrectlattice', 'C']:
 	 return True
       if option == 'p':
-	 return self.get_arg(option_index+1), self.get_arg(option_index+2)
+	 confusion = (self.get_arg(option_index+1).split(','), self.get_arg(option_index+2).split(','))
+	 if len(confusion[0]) != len(confusion[1]):
+	    self.usage('-p Correct and recognized states must be the same lenght.')
+	 return confusion
+      if option == 'fp':
+	 confusions = ([],[])
+	 for line in open(self.get_arg(option_index+1)):
+	    if line != '\n':
+	       phones = line.split()
+	       confusions[0].append(phones[0])
+	       confusions[1].append(phones[1])
+	 if len(confusions[0]) != 0:
+	    if len(confusions[0]) != len(confusions[1]):
+	       self.usage('ERROR: syntax on file'+str(self.get_arg(option_index+1)))
+	 return confusions
 
    def get_arg(self, index):
       try:
@@ -144,5 +162,5 @@ class ConsoleOptions(object):
 	 print ('  -iscorrectlattice (-isl): Allow gsflpy use confusion region of ' +
 	       'correct recognized files and/or set it to search for negative margins.')
 	 print '  -C: Set confusion as yes.'
-	 print '  -p: HMM models to considerer confusion. <recognized> <correct>'
+	 print '  -p: HMM models to considerer confusion. <recognized1>,<recognized2>,... <correct1>,<correct2>,...'
 	 sys.exit(-1)

@@ -44,6 +44,7 @@ def classify(samples):
 
 
 def re_score(sentences,
+      gain = 4,
       states_confusion = None):
    """
    states_confusion must be a tuple with the states of the confusion to be considered.
@@ -61,13 +62,15 @@ def re_score(sentences,
       for sentence in sentences:
 	 state_list.insert(0, sentence.segments[frame].state)
 	 segments.append(sentence.segments[frame])
-      ok = True
+      ok = False
 #      print str(states_confusion) + '\n'
 #      print str(state_list) + '\n'
-      for state in states_confusion:
-	 if not state in state_list:
-	    ok = False
-	    break
+      for index in range(len(states_confusion[0])):
+	 if states_confusion[0][index] in state_list:
+	    if states_confusion[1][index] in state_list:
+	       phoneme_index = index
+	       ok = True
+	       break
       if ok:
 	 samples = dict()
 	 biggest = segments[0].score
@@ -87,8 +90,8 @@ def re_score(sentences,
 	 if pred_value == 'True':
 	    for index in range(len(sentences)):
 	       segment = sentences[index].segments[frame]
-	       if segment.state == states_confusion[1]:
-		  segment.score += 80
+	       if segment.state in states_confusion[1][phoneme_index]:
+		  segment.score += gain * confidence
 
    for sentence in sentences:
       sentence.recalc_score()
@@ -97,6 +100,8 @@ if __name__=='__main__':
    options = ConsoleOptions(sys.argv, usage=usage)
    LAT_FILE, MAX_NODE, CORRECT_SENTENCE = options.get_option('L')
    classifier, classifier_instances = options.get_option('m')
+   states_confusion = options.get_option('p')
+   gain = options.get_option('g')
    options.check_all_read()
 
    if not isinstance(LAT_FILE, list):
@@ -110,7 +115,8 @@ if __name__=='__main__':
 	     MAX_NODE[index],
 	     CORRECT_SENTENCE[index]))
       old = str(sentences[0])
-      re_score(sentences, ('v[4]','ow1[4]'))
+#      re_score(sentences, (['v[4]'],['ow1[4]']))
+      re_score(sentences, gain, states_confusion)
       Sentence.__cmp__=Sentence.cmp_score
       sentences.sort()
       sentences.reverse()
